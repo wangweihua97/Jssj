@@ -15,14 +15,16 @@ namespace Core
         {
             GameContext = new Context();
             GameContext.AddService<MapService>();
-        }
-
-        private void Start()
-        {
+            
             GameWorld = new GameWorld();
             GameWorld.Plane = Plane;
             GameWorld.Init();
             GameWorld.CreatMonster();
+        }
+
+        private void Start()
+        {
+            
         }
     }
 }

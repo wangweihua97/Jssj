@@ -7,8 +7,14 @@ namespace Game.ECS
     [BurstCompile]
     public struct MapNodeStruct
     {
-        public int2 xy;
         public int startPos;
+        public int count;
+        public bool canWalk;
+    }
+    
+    [BurstCompile]
+    public struct MapNode2Struct
+    {
         public int count;
         public bool canWalk;
     }

@@ -34,6 +34,10 @@ namespace Game.ECS
                     }*/
                 }
             }
+            
+            CMoveJob2System cMoveJob2System =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<CMoveJob2System>();
+            cMoveJob2System.Init();
         }
         
         public async void CreatMonster()
