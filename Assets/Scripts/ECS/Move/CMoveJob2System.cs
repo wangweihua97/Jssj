@@ -14,10 +14,13 @@ namespace Game.ECS
     public partial class CMoveJob2System : SystemBase
     {
         EntityQuery m_Group;
-        const float SpringForce = 10.0f;
-        private const int MapNodeMaxContainEntitieCount = 12;
+        const float SpringForce = 100.0f;
+        private const int MapNodeMaxContainEntitieCount = 16;
         private NativeArray<EntitieInfo> mapNodeEs;
         private NativeArray<MapNode2Struct> canWalks;
+        private MyJob2 jobData;
+        private MapClearJob mapClearJob;
+        private UpdateMapJob updateMapJob;
         protected override void OnCreate()
         { 
             m_Group = GetEntityQuery(ComponentType.ReadOnly<CRotation>(),
@@ -40,6 +43,10 @@ namespace Game.ECS
             mapCanWalkJob.canWalks = canWalks;
             JobHandle mapCanWalkJobHandle = mapCanWalkJob.Schedule(xCount * yCount, 1);  
             mapCanWalkJobHandle.Complete();
+
+            updateMapJob = new UpdateMapJob();
+            jobData = new MyJob2();
+            mapClearJob = new MapClearJob();
         }
         
         [BurstCompile]
@@ -49,7 +56,7 @@ namespace Game.ECS
             public int yCount;
             public int zCount;
             public float deltaTime;
-            public float SpringForce;
+            public float springForce;
             [ReadOnly]
             public NativeArray<EntitieInfo> mapNodeEs;
             [ReadOnly]
@@ -171,7 +178,8 @@ namespace Game.ECS
                 float dis_len = math.max(0.01f ,math.length(dis));
                 if(dis_len >= selfRadius + anotherRadius)
                     return f;
-                f = SpringForce * (selfRadius + anotherRadius - dis_len) * dis / dis_len;
+                float pressureLen = selfRadius + anotherRadius - dis_len;
+                f = springForce *(0.1f * pressureLen + pressureLen * pressureLen)  * dis / dis_len;
                 return f;
             }
         }
@@ -185,6 +193,30 @@ namespace Game.ECS
                 MapNode2Struct mapNode2Struct = canWalks[index];
                 mapNode2Struct.count = 0;
                 canWalks[index] = mapNode2Struct;
+            }
+        }
+        
+        [BurstCompile]
+        public struct UpdateMapJob : IJob
+        {
+            public int xCount;
+            public int zCount;
+            [ReadOnly]
+            public NativeArray<EntitieInfo> es;
+            public NativeArray<MapNode2Struct> canWalks;
+            public NativeArray<EntitieInfo> mapNodeEs;
+            public void Execute()
+            {
+                for (int index = 0; index < es.Length; index++)
+                {
+                    EntitieInfo entitieInfo = es[index];
+                    int2 xy = new int2((int)entitieInfo.position.x ,(int)entitieInfo.position.y);
+                    MapNode2Struct mapNode2Struct = canWalks[xy.y * xCount + xy.x];
+                    mapNodeEs[xy.y * (xCount * zCount) + xy.x * zCount + mapNode2Struct.count] = entitieInfo;
+                    if(mapNode2Struct.count < zCount)
+                        mapNode2Struct.count += 1;
+                    canWalks[xy.y * xCount + xy.x] = mapNode2Struct;
+                }
             }
         }
         
@@ -218,7 +250,6 @@ namespace Game.ECS
             NativeArray<EntitieInfo> result
                 = new NativeArray<EntitieInfo>(dataCount, Allocator.Persistent);
             
-            MapClearJob mapClearJob = new MapClearJob();
             mapClearJob.canWalks = canWalks;
             JobHandle mapClearHandle = mapClearJob.Schedule(xCount * yCount, 1);  
             mapClearHandle.Complete();
@@ -226,7 +257,6 @@ namespace Game.ECS
             
             Entities
                 .WithStoreEntityQueryInField(ref m_Group)
-                .WithoutBurst()
                 .ForEach((int entityInQueryIndex, in CRotation cr ,in CPosition cp , in CMove cm) =>
                 {
                     EntitieInfo entitieInfo;
@@ -238,20 +268,21 @@ namespace Game.ECS
                     entitieInfo.v = cm.v;
                     entitieInfo.f = cm.f;
                     entitieInfo.i_m = cm.i_m;
-                    
-                    int2 xy = new int2((int)cp.position.x ,(int)cp.position.y);
-                    MapNode2Struct mapNode2Struct = canWalks[xy.y * xCount + xy.x];
-                    mapNodeEs[xy.y * (xCount * zCount) + xy.x * zCount + mapNode2Struct.count] = entitieInfo;
-                    if(mapNode2Struct.count < zCount)
-                        mapNode2Struct.count += 1;
-                    canWalks[xy.y * xCount + xy.x] = mapNode2Struct;
-
                     es[entityInQueryIndex] = entitieInfo;
 
                 })
-                .Run();
+                .ScheduleParallel();
+            Dependency.Complete();
             
-            MyJob2 jobData = new MyJob2();
+            updateMapJob.es = es;
+            updateMapJob.xCount = xCount;
+            updateMapJob.zCount = zCount;
+            updateMapJob.mapNodeEs = mapNodeEs;
+            updateMapJob.canWalks = canWalks;
+            
+            JobHandle updateHandle =updateMapJob.Schedule();
+            updateHandle.Complete();
+            
             jobData.mapNodeEs = mapNodeEs;
             jobData.mapCanWalk = canWalks;
             jobData.es = es;
@@ -259,14 +290,14 @@ namespace Game.ECS
             jobData.yCount = yCount;
             jobData.zCount = zCount;
             jobData.deltaTime = deltaTime;
-            jobData.SpringForce = SpringForce;
+            jobData.springForce = SpringForce;
             jobData.result = result;
             //调度作业
             JobHandle handle = jobData.Schedule(dataCount, 1);  
             //等待作业的完成
             handle.Complete();
             Entities
-                .WithName("RotationSpeedSystem_SpawnAndRemove")
+                .WithName("UpdatePosition")
                 .WithBurst()
                 .ForEach((int entityInQueryIndex,ref Translation translation,ref CPosition cPosition, ref CRotation cRotation ,ref CMove move) =>
                 {

@@ -18,6 +18,13 @@ namespace Game.ECS
         public int count;
         public bool canWalk;
     }
+    
+    [BurstCompile]
+    public struct MapNodeDir
+    {
+        public float2 dir;
+        public bool canWalk;
+    }
 
     [BurstCompile]
     public struct EntitieInfo

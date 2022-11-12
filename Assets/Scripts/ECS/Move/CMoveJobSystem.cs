@@ -14,7 +14,7 @@ namespace Game.ECS
     public partial class CMoveJobSystem : SystemBase
     {
         EntityQuery m_Group;
-        const float SpringForce = 10.0f;
+        const float SpringForce = 100.0f;
         protected override void OnCreate()
         { 
             m_Group = GetEntityQuery(ComponentType.ReadOnly<CRotation>(),
@@ -30,7 +30,7 @@ namespace Game.ECS
             public int xCount;
             public int yCount;
             public float deltaTime;
-            public float SpringForce;
+            public float springForce;
             [ReadOnly]
             public NativeArray<MapNodeStruct> ms;
             [ReadOnly]
@@ -147,7 +147,8 @@ namespace Game.ECS
                 float dis_len = math.max(0.01f ,math.length(dis));
                 if(dis_len >= selfRadius + anotherRadius)
                     return f;
-                f = SpringForce * (selfRadius + anotherRadius - dis_len) * dis / dis_len;
+                float pressureLen = selfRadius + anotherRadius - dis_len;
+                f = springForce * (0.1f * pressureLen + pressureLen * pressureLen)  * dis / dis_len;
                 return f;
             }
         }
@@ -233,7 +234,7 @@ namespace Game.ECS
             jobData.xCount = xCount;
             jobData.yCount = yCount;
             jobData.deltaTime = deltaTime;
-            jobData.SpringForce = SpringForce;
+            jobData.springForce = SpringForce;
             jobData.result = result;
             //调度作业
             JobHandle handle = jobData.Schedule(dataCount, 1);  

@@ -15,6 +15,7 @@ namespace Game.ECS
 
         protected override void OnUpdate()
         {
+            return;
             Entities
                 .WithName("RotationSpeedSystem_SpawnAndRemove")
                 .WithoutBurst()

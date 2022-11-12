@@ -38,6 +38,10 @@ namespace Game.ECS
             CMoveJob2System cMoveJob2System =
                 World.DefaultGameObjectInjectionWorld.GetExistingSystem<CMoveJob2System>();
             cMoveJob2System.Init();
+            
+            CPositionJobSystem cPositionJobSystem =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<CPositionJobSystem>();
+            cPositionJobSystem.Init();
         }
         
         public async void CreatMonster()
@@ -46,7 +50,7 @@ namespace Game.ECS
                 World.DefaultGameObjectInjectionWorld.GetExistingSystem<MonsterSpawnerSystem>();
 
             await Task.Delay(100);
-            for (int i = 0; i < 4000; i++)
+            for (int i = 0; i < 10000; i++)
             {
                 int2 random_pos = new int2(UnityEngine.Random.Range(0,FlowFieldMap.Size.x),
                     Random.Range(0,FlowFieldMap.Size.y));

@@ -80,6 +80,7 @@
      <Compile Include="Assets\Scripts\Render\EffectRenderService.cs" />
      <Compile Include="Assets\Scripts\ECS\Transform\CPosition.cs" />
      <Compile Include="Assets\Scripts\ECS\Move\CMoveJob2System.cs" />
+     <Compile Include="Assets\Scripts\ECS\Transform\CPositionJobSystem.cs" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
