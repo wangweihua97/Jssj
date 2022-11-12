@@ -5,7 +5,8 @@ namespace Game.ECS
 {
     public struct CMove : IComponentData
     {
-        public float3 moveDir;
-        public float moveSpeed;
+        public float2 v;
+        public float2 f;
+        public float i_m;
     }
 }

@@ -21,12 +21,13 @@ namespace Game.Map
                 {
                     map[j * Size.x + i].CellType = (int)CellType.CementFloor;
                     map[j * Size.x + i].Dir = new half2(new half(0.0f),new half(0.0f));
-                    map[j * Size.x + i].EntityInCell.is_contarin_1 = false;
+                    map[j * Size.x + i].Colliders = new List<Collider>(10);
+                    /*map[j * Size.x + i].EntityInCell.is_contarin_1 = false;
                     map[j * Size.x + i].EntityInCell.is_contarin_2 = false;
                     map[j * Size.x + i].EntityInCell.is_contarin_3 = false;
                     map[j * Size.x + i].EntityInCell.is_contarin_4 = false;
                     map[j * Size.x + i].EntityInCell.is_contarin_5 = false;
-                    map[j * Size.x + i].EntityInCell.is_contarin_6 = false;
+                    map[j * Size.x + i].EntityInCell.is_contarin_6 = false;*/
                 }
             }
         }

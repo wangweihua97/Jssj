@@ -4,7 +4,8 @@ namespace Game.ECS
 {
     public struct CPosition : IComponentData
     {
-        public float3 position;
-        public int indexInCell;
+        public float2 position;
+        public float radius;
+        public uint id;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Entitas;
 using Unity.Burst;
 using Unity.Mathematics;
@@ -10,9 +11,10 @@ namespace Game.Map
         public uint shape;
         public float2 pos;
         public float radius;
+        public uint id;
     }
     
-    public struct EntityInCell
+    /*public struct EntityInCell
     {
         public bool is_contarin_1;
         public bool is_contarin_2;
@@ -27,11 +29,13 @@ namespace Game.Map
         public Collider entity5;
         public Collider entity6;
     }
+    */
 
     public struct MapCell
     {
         public half2 Dir;
-        public EntityInCell EntityInCell;
+        //public EntityInCell EntityInCell;
+        public List<Collider> Colliders;
         public uint CellType;
     }
 

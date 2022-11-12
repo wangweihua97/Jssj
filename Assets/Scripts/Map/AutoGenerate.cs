@@ -13,9 +13,12 @@ namespace Game.Map
     
     public static class AutoGenerate
     {
-        private static int ObstacleNumber = 500;
+        /*private static int ObstacleNumber = 500;
         private static int RandomObstacleDeep = 8;
-        private static int2 ObstacleRange = new int2(10,50);
+        private static int2 ObstacleRange = new int2(10,50);*/
+        private static int ObstacleNumber = 100;
+        private static int RandomObstacleDeep = 10;
+        private static int2 ObstacleRange = new int2(30,70);
         public static FlowFieldMap Generate()
         {
             FlowFieldMap fieldMap = new FlowFieldMap();
