@@ -69,6 +69,7 @@
      <Compile Include="Assets\Scripts\Map\MapCell.cs" />
      <Compile Include="Assets\HelloCube\RotationSpeedAuthoring_IJobEntityBatch.cs" />
      <Compile Include="Assets\Scripts\Render\CharacterRenderService.cs" />
+     <Compile Include="Assets\Scripts\ECS\Move\CMoveJob2System.cs" />
      <Compile Include="Assets\Scripts\Camera\MainCamera.cs" />
      <Compile Include="Assets\Scripts\Core\GameStage.cs" />
      <Compile Include="Assets\Scripts\ECS\Move\CMoveSystem_Old.cs" />
@@ -77,10 +78,9 @@
      <Compile Include="Assets\Scripts\ECS\Move\MapStruct.cs" />
      <Compile Include="Assets\Scripts\Map\MapService.cs" />
      <Compile Include="Assets\Scripts\Core\Service.cs" />
+     <Compile Include="Assets\Scripts\ECS\Transform\CPositionJobSystem.cs" />
      <Compile Include="Assets\Scripts\Render\EffectRenderService.cs" />
      <Compile Include="Assets\Scripts\ECS\Transform\CPosition.cs" />
-     <Compile Include="Assets\Scripts\ECS\Move\CMoveJob2System.cs" />
-     <Compile Include="Assets\Scripts\ECS\Transform\CPositionJobSystem.cs" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
