@@ -1,0 +1,1 @@
+{"size": 512, "info": {"Baked frames": [0, 97]}}
