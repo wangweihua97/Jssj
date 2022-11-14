@@ -10,13 +10,15 @@ bl_info = {
     "category": "Generic",
 }
 
-import bpy
-import bmesh
-from bpy.types import Operator,Panel,PropertyGroup,AddonPreferences
-from itertools import chain
 import copy
 import json
 import os
+from itertools import chain
+
+import bmesh
+import bpy
+from bpy.types import AddonPreferences, Operator, Panel, PropertyGroup
+
 
 class Anim_property(bpy.types.PropertyGroup):
     name:bpy.props.StringProperty(default="name",description='name')
@@ -47,6 +49,12 @@ class OT_VAT__Bake(Operator):
     def execute(self, context):
         scene = context.scene
         vat_property = scene.vat_property
+        
+        anims_settings = scene.anims_settings
+        anims_settings_map = {}
+        for item in anims_settings:
+            anims_settings_map[item.name] = item.is_recode
+            
         x_range = vat_property.x_max - vat_property.x_min
         y_range = vat_property.y_max - vat_property.y_min
         z_range = vat_property.z_max - vat_property.z_min
@@ -134,7 +142,11 @@ class OT_VAT__Bake(Operator):
 
         acts_is_recode = []
         for i in range(0 ,len(acts_sort)):
-            acts_is_recode.append(False)
+            is_recode = anims_settings_map[acts_sort[i]]
+            if is_recode:
+                acts_is_recode.append(False)
+            else:
+                acts_is_recode.append(True)
     
 
         img_index = 0
@@ -212,8 +224,6 @@ class OT_VAT__Bake(Operator):
                     if not acts_is_recode[i] and acts_frame_count[acts_sort[i]] < self.left_count :
                         bake_vat_img(self ,i)
                         return True
-                    else :
-                        print(str(acts_frame_count[acts_sort[i]]) + "++++++" + str(self.left_count))
                 return False
             
             while recode(self):
@@ -240,6 +250,21 @@ class OT_VAT__Bake(Operator):
 
         bpy.ops.object.mode_set(mode='OBJECT')
         return {'FINISHED'}
+    
+class OT_VAT_Anim(Operator):
+    bl_idname = "vat.vat_anim"
+    bl_label = "select vertex animation"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        scene = context.scene
+        anims_settings = scene.anims_settings
+        for act in bpy.data.actions:
+            item = anims_settings.add()
+            item.name = act.name
+            item.is_recode = True
+        return {'FINISHED'}
+        
 
 class VAT_PT_Panel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
@@ -254,7 +279,8 @@ class VAT_PT_Panel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
         vat_property = scene.vat_property
-
+        anims_settings = scene.anims_settings
+        
         layout.label(text="VAT 工具")
         row = layout.row()
         row.scale_y = 3.0
@@ -267,6 +293,13 @@ class VAT_PT_Panel(bpy.types.Panel):
         
         layout.label(text="VAT的size")
         layout.prop(vat_property,'size',text="size")
+        
+        layout.label(text="选择动画")
+        row = layout.row()
+        row.operator("vat.vat_anim")
+        
+        for item in anims_settings :
+            layout.prop(item,'is_recode',text=item.name)
 
         layout.label(text="X坐标范围")
         row = layout.row()
@@ -298,11 +331,13 @@ def register():
     bpy.types.Scene.vat_property = bpy.props.PointerProperty(type=VAT_property)
     bpy.types.Scene.anims_settings = bpy.props.CollectionProperty(type=Anim_property)
     bpy.utils.register_class(OT_VAT__Bake)
+    bpy.utils.register_class(OT_VAT_Anim)
     bpy.utils.register_class(VAT_PT_Panel)
 
 
 def unregister():
     bpy.utils.unregister_class(OT_VAT__Bake)
+    bpy.utils.unregister_class(OT_VAT_Anim)
     bpy.utils.unregister_class(VAT_PT_Panel)
 
 if __name__ == "__main__":
