@@ -5,6 +5,6 @@ namespace Game.ECS
 {
     public struct CRotation : IComponentData
     {
-        public float3 rotation;
+        public float rotation;
     }
 }

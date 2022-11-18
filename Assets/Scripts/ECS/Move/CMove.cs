@@ -8,5 +8,7 @@ namespace Game.ECS
         public float2 v;
         public float2 f;
         public float i_m;
+
+        public float2 last_f;
     }
 }

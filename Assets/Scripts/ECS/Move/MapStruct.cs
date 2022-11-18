@@ -30,12 +30,13 @@ namespace Game.ECS
     public struct EntitieInfo
     {
         public int index;
-        public float3 rotation;
+        public float2 rotation;
         public float2 position;
         public float radius;
         public uint id;
         public float2 v;
         public float2 f;
+        public float2 last_f;
         public float i_m;
     }
 }

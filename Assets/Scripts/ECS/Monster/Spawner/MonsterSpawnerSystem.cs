@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 using Collider = Game.Map.Collider;
+using Random = UnityEngine.Random;
 
 namespace Game.ECS
 {
@@ -40,12 +41,16 @@ namespace Game.ECS
             commandBuffer.SetComponent(instance, new CRotation() { rotation =  float3.zero});
             commandBuffer.SetComponent(instance, new CMove() {  moveSpeed =  2.0f,moveDir = float3.zero});*/
             var EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            var instance = EntityManager.Instantiate(MonsterEntity.Prefab);
+            //var instance = EntityManager.Instantiate(MonsterEntity.Prefab);
+            var instance = EntityManager.CreateEntity();
             var position = new float2(xy.x + 0.5f ,xy.y+ 0.5f);
             MonsterId++;
             EntityManager.AddComponentData(instance, new CPosition() { position =  position ,id = MonsterId ,radius = 0.5f});
-            EntityManager.AddComponentData(instance, new CRotation() { rotation =  float3.zero});
-            EntityManager.AddComponentData(instance, new CMove() {  i_m =  4.0f,v = float2.zero ,f = float2.zero});
+            EntityManager.AddComponentData(instance, new CRotation() { rotation =  0.0f});
+            EntityManager.AddComponentData(instance, new CMove() {  i_m =  4.0f,v = float2.zero ,f = float2.zero ,last_f = float2.zero});
+            EntityManager.AddComponentData(instance, new CMonsterState() {  CurState =  0,MonsterType = 0});
+            float random_play_time = Random.Range(0.0f, 1.0f);
+            EntityManager.AddComponentData(instance, new CMonsterAnim() {  cur_playTime = random_play_time});
             Insert(xy ,MonsterId ,new float2(xy.x + 0.5f ,xy.y+ 0.5f), 0.5f);
         }
         

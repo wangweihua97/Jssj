@@ -80,7 +80,7 @@ Shader "Unlit/VertAnimCharacter"
                 //half3 h = tex2Dlod(_AnimMap, float4(IN.uv2,1,1)).xyz;
                 half3 h = SAMPLE_TEXTURE2D_LOD(_AnimMap, sampler_AnimMap ,float2(IN.uv2.x ,playPos) ,0.0).rgb;
                 //half3 h = half3(1.0,1.0,1.0);
-                h = h*half3(8,8,8) - half3(4,4,0);
+                h = h*half3(4,4,4) - half3(2,2,0);
                 
                 half3 n = SAMPLE_TEXTURE2D_LOD(_NormalMap, sampler_AnimMap ,float2(IN.uv2.x ,playPos) ,0.0).rgb;
                 
@@ -174,7 +174,7 @@ Shader "Unlit/VertAnimCharacter"
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
                 float playPos =UNITY_ACCESS_INSTANCED_PROP(Props, _PlayPos);
                 half3 h = SAMPLE_TEXTURE2D_LOD(_AnimMap, sampler_AnimMap ,float2(v.uv2.x ,playPos) ,0.0).rgb;
-                h = h*half3(8,8,8) - half3(4,4,0);
+                h = h*half3(4,4,4) - half3(2,2,0);
                 
 				o.pos = mul(UNITY_MATRIX_MVP,float4(h ,1.0));
 				//o.pos = mul(UNITY_MATRIX_MVP,v.vertex);

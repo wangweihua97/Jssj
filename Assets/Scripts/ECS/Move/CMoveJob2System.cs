@@ -21,6 +21,9 @@ namespace Game.ECS
         private MyJob2 jobData;
         private MapClearJob mapClearJob;
         private UpdateMapJob updateMapJob;
+
+        private const float MAX_V = 8.0f;
+        private const float MAX_A = 10.0f;
         protected override void OnCreate()
         { 
             m_Group = GetEntityQuery(ComponentType.ReadOnly<CRotation>(),
@@ -77,25 +80,29 @@ namespace Game.ECS
                 float2 posXY = source.position;
 
                 float2 newPos;
-                float2 v;
-                
-                
+                float2 v = float2.zero;
+                float2 totalF = float2.zero;
+
+                float max_f = MAX_A * source.i_m;
                 
                 if (!mapCanWalk[xy.y * xCount + xy.x].canWalk)
                 {
                     float2 offset = math.abs(posXY - xy - new float2(0.5f,0.5f));
                     bool is_x_bigger = offset.x > offset.y;
+                    float distance = 0.5f - math.length(offset);
                     if (is_x_bigger)
                     {
                         bool is_right = posXY.x > xy.x + 0.5f;
-                        newPos = is_right ? new float2(xy.x + 1.01f,posXY.y) : new float2(xy.x - 0.01f,posXY.y);
-                        v = is_right ? new float2(math.abs(source.v.x) ,source.v.y) :new float2(-math.abs(source.v.x) ,source.v.y) ;
+                        //newPos = is_right ? new float2(xy.x + 1.01f,posXY.y) : new float2(xy.x - 0.01f,posXY.y);
+                        //v = is_right ? new float2(math.abs(source.v.x) ,source.v.y) :new float2(-math.abs(source.v.x) ,source.v.y) ;
+                        totalF += is_right? new float2(2 * distance * max_f,0) : new float2(-2 * distance * max_f,0);
                     }
                     else
                     {
                         bool is_up = posXY.y > xy.y + 0.5f ;
-                        newPos = is_up? new float2(posXY.x ,xy.y + 1.01f) : new float2(posXY.x ,xy.y - 0.01f);
-                        v = is_up ? new float2(source.v.x ,math.abs(source.v.y)) :new float2(source.v.x ,-math.abs(source.v.y));
+                        //newPos = is_up? new float2(posXY.x ,xy.y + 1.01f) : new float2(posXY.x ,xy.y - 0.01f);
+                        //v = is_up ? new float2(source.v.x ,math.abs(source.v.y)) :new float2(source.v.x ,-math.abs(source.v.y));
+                        totalF += is_up? new float2(0,2 * distance * max_f) : new float2(0,-2 * distance * max_f);
                     }
                 }
                 else
@@ -111,10 +118,27 @@ namespace Game.ECS
                     Check(xy + new int2(-1,0), source.id ,posXY,source.radius ,ref f);
                     Check(xy + new int2(-1,1), source.id ,posXY,source.radius ,ref f);
 
-                    float2 totalF = f + source.f;
-                    v = deltaTime * totalF * source.i_m + source.v;
-                    newPos = posXY + 0.5f * (v+source.v)  * deltaTime;
+                    totalF += f + source.f;
+                    
                 }
+                float2 a = totalF * source.i_m;
+                    
+                if (a.x * a.x + a.y * a.y > MAX_A * MAX_A)
+                {
+                    float a_len = math.length(a);
+                    a = a / a_len * MAX_A;
+                }
+                    
+                v = deltaTime * a +  source.v;
+                    
+                if (v.x * v.x + v.y * v.y > MAX_V * MAX_V)
+                {
+                    float v_len = math.length(v);
+                    v = v / v_len * MAX_V;
+                }
+                    
+                newPos = posXY + v * deltaTime;
+                source.f = totalF;
                 //newPos = posXY + newDir * newLength;
                 int2 newXy = new int2((int)newPos.x ,(int)newPos.y);
                 if(newXy.x < 0 || newXy.x >= xCount || newXy.y < 0 || newXy.y>= yCount)
@@ -267,6 +291,7 @@ namespace Game.ECS
                     entitieInfo.id = cp.id;
                     entitieInfo.v = cm.v;
                     entitieInfo.f = cm.f;
+                    entitieInfo.last_f = cm.last_f;
                     entitieInfo.i_m = cm.i_m;
                     es[entityInQueryIndex] = entitieInfo;
 
@@ -299,11 +324,11 @@ namespace Game.ECS
             Entities
                 .WithName("UpdatePosition")
                 .WithBurst()
-                .ForEach((int entityInQueryIndex,ref Translation translation,ref CPosition cPosition, ref CRotation cRotation ,ref CMove move) =>
+                .ForEach((int entityInQueryIndex,ref CPosition cPosition, ref CRotation cRotation ,ref CMove move) =>
                 {
                     EntitieInfo entitieInfo = result[entityInQueryIndex];
                     move.v = entitieInfo.v;
-                    translation.Value = new float3(entitieInfo.position.x ,0 ,entitieInfo.position.y);
+                    move.f = entitieInfo.f;
                     cPosition.position = entitieInfo.position;
                 }).ScheduleParallel();
             

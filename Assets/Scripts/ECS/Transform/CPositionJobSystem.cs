@@ -15,10 +15,10 @@ namespace Game.ECS
     {
         private NativeArray<MapNodeDir> mapDirs;
         EntityQuery m_Group;
+        private const float ROTATE_SPEED = 100.0f;
         protected override void OnCreate()
         {
-            m_Group = GetEntityQuery(typeof(CMove), ComponentType.ReadOnly<CPosition>());
-            
+            m_Group = GetEntityQuery(typeof(CMove),typeof(CRotation), ComponentType.ReadOnly<CPosition>());
         }
 
         public void Init()
@@ -56,32 +56,42 @@ namespace Game.ECS
         struct UpdateForceJob : IJobChunk
         {
             public int xCount;
+            public float deltaTime;
             public ComponentTypeHandle<CMove> CMovHandle;
+            public ComponentTypeHandle<CRotation> cRotationHandle;
             [ReadOnly] public ComponentTypeHandle<CPosition> CPositionHandle;
             [ReadOnly] public NativeArray<MapNodeDir> mapDirs;
 
             public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
             {
                 var chunkMoves = chunk.GetNativeArray(CMovHandle);
+                var chunkRotations = chunk.GetNativeArray(cRotationHandle);
                 var chunkPositions = chunk.GetNativeArray(CPositionHandle);
                 for (var i = 0; i < chunk.Count; i++)
                 {
                     var move = chunkMoves[i];
                     var position = chunkPositions[i];
+                    var rotation = chunkRotations[i];
                     
                     
                     int2 xy = new int2((int)position.position.x ,(int)position.position.y);
                     MapNodeDir mapNodeDir = mapDirs[xy.y * xCount + xy.x];
-                    
+                    move.last_f = move.f;
                     if (mapNodeDir.canWalk)
                     {
                         float2 dir = mapNodeDir.dir;
                         move.f =  4 * (dir * move.i_m  - move.v);
+                        float curRotation = math.atan2(dir.x, dir.y);
+                        float dif = curRotation - rotation.rotation;
+                        float dif_dir = dif > 0 ? 1 : -1;
+                        dif = math.min(math.abs(dif), math.abs(ROTATE_SPEED * deltaTime));
+                        chunkRotations[i] = new CRotation(){ rotation = rotation.rotation + dif * dif_dir};
                     }
                     else
                     {
                         move.f = - 2 * move.v;
                     }
+                    
                     // Rotate something about its up vector at the speed given by RotationSpeed_IJobChunkStructBased.
                     chunkMoves[i] = move;
                 }
@@ -94,13 +104,16 @@ namespace Game.ECS
             int xCount = FlowFieldMap.Size.x;
             
             var moveType = GetComponentTypeHandle<CMove>();
+            var rotationType = GetComponentTypeHandle<CRotation>();
             var positionType = GetComponentTypeHandle<CPosition>(true);
 
             var job = new UpdateForceJob()
             {
+                deltaTime = Time.DeltaTime,
                 xCount = xCount,
                 mapDirs = mapDirs,
                 CMovHandle = moveType,
+                cRotationHandle = rotationType,
                 CPositionHandle = positionType
             };
 

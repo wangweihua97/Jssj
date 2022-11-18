@@ -14,6 +14,11 @@ namespace Game.VAT
         public List<Vector2> AnimInfos;
 
         public int VAT_Size;
+
+        public int RunAnimIndex;
+        public int AtkAnimIndex;
+        public int DeathAnimIndex;
+        
     }
     
     //++++++++++++++++++++++++++++++++++++
@@ -31,9 +36,23 @@ namespace Game.VAT
             if (GUILayout.Button("载入动画json信息", GUILayout.Width(200f)))
             {
                 vertsAnimation = (VAT_Info) target;
-                vertsAnimation.AnimInfos.Clear();
-                vertsAnimation.AnimNames.Clear();
-                
+                if (vertsAnimation.AnimInfos != null)
+                {
+                    vertsAnimation.AnimInfos.Clear();
+                }
+                else
+                {
+                    vertsAnimation.AnimInfos = new List<Vector2>(); 
+                }
+
+                if (vertsAnimation.AnimNames != null)
+                {
+                    vertsAnimation.AnimNames.Clear();
+                }
+                else
+                {
+                    vertsAnimation.AnimNames = new List<string>();
+                }
                 string jsonPath = EditorUtility.OpenFilePanel("载入动画json信息", Application.dataPath, "txt");
                 string jsonStr= File.ReadAllText(jsonPath);
                 JsonData jsonObject = JsonMapper.ToObject(jsonStr);

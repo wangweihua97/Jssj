@@ -42,6 +42,10 @@ namespace Game.ECS
             CPositionJobSystem cPositionJobSystem =
                 World.DefaultGameObjectInjectionWorld.GetExistingSystem<CPositionJobSystem>();
             cPositionJobSystem.Init();
+            
+            SMosterAnimSystem sMosterAnimSystem =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SMosterAnimSystem>();
+            sMosterAnimSystem.Init();
         }
         
         public async void CreatMonster()

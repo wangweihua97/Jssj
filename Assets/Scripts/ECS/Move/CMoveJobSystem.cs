@@ -191,6 +191,7 @@ namespace Game.ECS
                     entitieInfo.id = cp.id;
                     entitieInfo.v = cm.v;
                     entitieInfo.f = cm.f;
+                    entitieInfo.last_f = cm.last_f;
                     entitieInfo.i_m = cm.i_m;
                     
                     int2 xy = new int2((int)cp.position.x ,(int)cp.position.y);
