@@ -35,23 +35,27 @@ namespace Game.ECS
                 }
             }
             
-            CMoveJob2System cMoveJob2System =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<CMoveJob2System>();
-            cMoveJob2System.Init();
+            SPhysicsJob2System sPhysicsJob2System =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SPhysicsJob2System>();
+            sPhysicsJob2System.Init();
             
-            CPositionJobSystem cPositionJobSystem =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<CPositionJobSystem>();
-            cPositionJobSystem.Init();
+            SPathfindingJobSystem sPathfinding =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SPathfindingJobSystem>();
+            sPathfinding.Init();
             
-            SMosterAnimSystem sMosterAnimSystem =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SMosterAnimSystem>();
+            SMosterRenderSystem sMosterAnimSystem =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SMosterRenderSystem>();
             sMosterAnimSystem.Init();
+            
+            SGroundRenderSystem sGroundRenderSystem =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SGroundRenderSystem>();
+            sGroundRenderSystem.Init();
         }
         
         public async void CreatMonster()
         {
-            MonsterSpawnerSystem monsterSpawnerSystem =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<MonsterSpawnerSystem>();
+            SMonsterSpawnerSystem monsterSpawnerSystem =
+                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SMonsterSpawnerSystem>();
 
             await Task.Delay(100);
             for (int i = 0; i < 10000; i++)
