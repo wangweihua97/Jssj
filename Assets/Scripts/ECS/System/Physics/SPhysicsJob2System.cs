@@ -23,7 +23,7 @@ namespace Game.ECS
         private UpdateMapJob updateMapJob;
 
         private const float MAX_V = 8.0f;
-        private const float MAX_A = 10.0f;
+        private const float MAX_A = 16.0f;
         protected override void OnCreate()
         { 
             m_Group = GetEntityQuery(ComponentType.ReadOnly<CRotation>(),
@@ -203,7 +203,7 @@ namespace Game.ECS
                 if(dis_len >= selfRadius + anotherRadius)
                     return f;
                 float pressureLen = selfRadius + anotherRadius - dis_len;
-                f = springForce *(0.1f * pressureLen + pressureLen * pressureLen)  * dis / dis_len;
+                f = springForce *(0.1f * pressureLen + 5 * pressureLen * pressureLen)  * dis / dis_len;
                 return f;
             }
         }

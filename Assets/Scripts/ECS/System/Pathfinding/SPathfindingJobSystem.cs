@@ -81,10 +81,10 @@ namespace Game.ECS
                     {
                         float2 dir = mapNodeDir.dir;
                         move.f =  4 * (dir * move.i_m  - move.v);
-                        float curRotation = math.atan2(dir.x, dir.y);
+                        float curRotation = math.atan2(dir.x, dir.y) * Mathf.Rad2Deg;
                         float dif = curRotation - rotation.rotation;
                         float dif_dir = dif > 0 ? 1 : -1;
-                        dif = math.min(math.abs(dif), math.abs(ROTATE_SPEED * deltaTime));
+                        dif = math.min(math.abs(dif), ROTATE_SPEED * deltaTime);
                         chunkRotations[i] = new CRotation(){ rotation = rotation.rotation + dif * dif_dir};
                     }
                     else

@@ -92,8 +92,8 @@
      <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\ActiveBuildConfiguration\ActiveBuildConfiguration.cs" />
      <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\Common\Controls\SystemDependencyViewData.cs" />
      <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\SystemSchedule\PlayerLoop\PlayerLoopSystemNode.cs" />
-     <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\Hierarchy\Model\HierarchyNodeStore.cs" />
      <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\ActiveBuildConfiguration\ActiveBuildConfigurationWindow.cs" />
+     <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\Hierarchy\Model\HierarchyNodeStore.cs" />
      <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\Settings\DOTSEditorProjectSettingsAttribute.cs" />
      <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\EntityInspector\DynamicBufferContainer.cs" />
      <Compile Include="Library\PackageCache\com.unity.entities@0.51.1-preview.21\Unity.Entities.Editor\Inspector\ComponentsTab.cs" />

@@ -45,9 +45,9 @@ namespace Game.ECS
             var instance = EntityManager.CreateEntity();
             var position = new float2(xy.x + 0.5f ,xy.y+ 0.5f);
             MonsterId++;
-            EntityManager.AddComponentData(instance, new CPosition() { position =  position ,id = MonsterId ,radius = 0.5f});
+            EntityManager.AddComponentData(instance, new CPosition() { position =  position ,id = MonsterId ,radius = 0.4f});
             EntityManager.AddComponentData(instance, new CRotation() { rotation =  0.0f});
-            EntityManager.AddComponentData(instance, new CMove() {  i_m =  4.0f,v = float2.zero ,f = float2.zero ,last_f = float2.zero});
+            EntityManager.AddComponentData(instance, new CMove() {  i_m =  2.0f,v = float2.zero ,f = float2.zero ,last_f = float2.zero});
             EntityManager.AddComponentData(instance, new CMonsterState() {  CurState =  0,MonsterType = 0});
             float random_play_time = Random.Range(0.0f, 1.0f);
             EntityManager.AddComponentData(instance, new CMonsterAnim() {  cur_playTime = random_play_time});

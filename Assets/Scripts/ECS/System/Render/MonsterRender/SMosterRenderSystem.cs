@@ -20,7 +20,7 @@ namespace Game.ECS
     {
         
         
-        private const float VAT_FRAMERATE = 30.0f;
+        private const float VAT_FRAMERATE = 60.0f;
         private const int MAX_MONSTER_SHOW_COUNT = 10000;
         private int ShaderPlayPosId = Shader.PropertyToID("_PlayPos");
         
@@ -115,7 +115,9 @@ namespace Game.ECS
             public NativeArray<TempAnimInfo> TempAnimInfos;
             [ReadOnly]
             public NativeArray<int> MonsterCount;
+            [WriteOnly]
             public NativeArray<float> AnimPlayPoses;
+            [WriteOnly]
             public NativeArray<Matrix4x4> Mats;
             public void Execute(int index)
             {
@@ -130,11 +132,8 @@ namespace Game.ECS
                 
                 Matrix4x4 m = Matrix4x4.Translate(new Vector3(tempAnimInfo.posx, 0.0f, tempAnimInfo.posy))
                               * Matrix4x4.Rotate(Quaternion.Euler(0.0f,tempAnimInfo.rotation,0.0f)) * monsterAnimInfo.self_mat;;
-                float time = math.fmod(tempAnimInfo.cur_play_time * monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.run_anim_time);
-                
-                float animPlayPos = monsterAnimInfo.run_anim_pos + time;
 
-                AnimPlayPoses[index] = animPlayPos;
+                AnimPlayPoses[index] = tempAnimInfo.cur_play_time ;
                 Mats[index] = m;
             }
         }
@@ -142,14 +141,11 @@ namespace Game.ECS
         protected override void OnUpdate()
         {
             Profiler.BeginSample("CalculateRenderdara");
-            float2 center = MainCamera.Instance.Center;
-            float width = MainCamera.Instance.Width;
-            float height = MainCamera.Instance.Height;
 
-            float minx = center.x - width - 0.5f;
-            float maxx = center.x + width + 0.5f;
-            float miny = center.y - height - 0.5f;
-            float maxy = center.y + height + 0.5f;
+            float minx = MainCamera.Instance.min_x - 0.5f;
+            float maxx = MainCamera.Instance.max_x + 0.5f;
+            float miny = MainCamera.Instance.min_y - 0.5f;
+            float maxy = MainCamera.Instance.max_y + 0.5f;
             
             float deltaTime = Time.DeltaTime;
             var monsterAnimInfos = MonsterAnimInfos;
@@ -185,15 +181,17 @@ namespace Game.ECS
                 .WithStoreEntityQueryInField(ref m_Group)
                 .ForEach((ref CMonsterAnim cma ,in CRotation cr ,in CPosition cp , in CMonsterState cms) =>
                 {
-                    /*if(cp.position.x < minx || cp.position.x > maxx 
+                    //#if !CLOSE_CUll
+                    if(cp.position.x < minx || cp.position.x > maxx 
                                             ||cp.position.y < miny || cp.position.y > maxy )
-                        return;*/
+                        return;
+                    //#endif
                     int type = cms.MonsterType;
-                    MonsterAnimInfo monsterAnimInfo = MonsterAnimInfos[type];
-                    float playTime = deltaTime + cma.cur_playTime;
+                    MonsterAnimInfo monsterAnimInfo = monsterAnimInfos[type];
+                    float playTime = math.fmod(cma.cur_playTime + deltaTime* monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.run_anim_time);
                     cma.cur_playTime = playTime;
                     TempAnimInfo tempAnimInfo;
-                    tempAnimInfo.cur_play_time = playTime;
+                    tempAnimInfo.cur_play_time = monsterAnimInfo.run_anim_pos+playTime; 
                     tempAnimInfo.type = type;
                     tempAnimInfo.posx = cp.position.x;
                     tempAnimInfo.posy = cp.position.y;

@@ -61,14 +61,10 @@ namespace Game.ECS
         
         protected override void OnUpdate()
         {
-            float2 center = MainCamera.Instance.Center;
-            float width = MainCamera.Instance.Width;
-            float height = MainCamera.Instance.Height;
-
-            float minx = center.x - width;
-            float maxx = center.x + width;
-            float miny = center.y - height;
-            float maxy = center.y + height;
+            float minx = MainCamera.Instance.min_x;
+            float maxx = MainCamera.Instance.max_x;
+            float miny = MainCamera.Instance.min_y;
+            float maxy = MainCamera.Instance.max_y;
 
             int indexMinX = (int)math.floor(minx / PLAN_SIZE);
             int indexMiny = (int)math.floor(miny / PLAN_SIZE);

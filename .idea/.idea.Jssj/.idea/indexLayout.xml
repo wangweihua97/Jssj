@@ -68,6 +68,7 @@
       <Path>Library/PackageCache/com.unity.textmeshpro@3.0.6</Path>
       <Path>Library/PackageCache/com.unity.timeline@1.6.4</Path>
       <Path>Library/PackageCache/com.unity.ugui@1.0.0</Path>
+      <Path>Library/PackageCache/com.unity.visualeffectgraph@12.1.7</Path>
       <Path>Library/PackageCache/com.unity.visualscripting@1.7.8</Path>
       <Path>Packages</Path>
       <Path>ProjectSettings</Path>
@@ -78,7 +79,9 @@
       <Path>Logs</Path>
       <Path>Temp</Path>
       <Path>UserSettings</Path>
+      <Path>blender</Path>
       <Path>obj</Path>
+      <Path>python</Path>
     </explicitExcludes>
   </component>
 </project>

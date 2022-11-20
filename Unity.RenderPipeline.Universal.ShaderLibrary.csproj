@@ -344,54 +344,6 @@
      <Reference Include="Unity.Collections.LowLevel.ILSupport">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.collections@1.4.0\Unity.Collections.LowLevel.ILSupport\Unity.Collections.LowLevel.ILSupport.dll</HintPath>
      </Reference>
-     <Reference Include="DesperateDevs.Extensions">
-     <HintPath>F:\myself\jssj\Jssj\Assets\DesperateDevs\DesperateDevs.Extensions.dll</HintPath>
-     </Reference>
-     <Reference Include="Entitas">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Entitas.dll</HintPath>
-     </Reference>
-     <Reference Include="DesperateDevs.Caching">
-     <HintPath>F:\myself\jssj\Jssj\Assets\DesperateDevs\DesperateDevs.Caching.dll</HintPath>
-     </Reference>
-     <Reference Include="Entitas.Migration">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Editor\Entitas.Migration.dll</HintPath>
-     </Reference>
-     <Reference Include="DesperateDevs.Threading">
-     <HintPath>F:\myself\jssj\Jssj\Assets\DesperateDevs\DesperateDevs.Threading.dll</HintPath>
-     </Reference>
-     <Reference Include="Entitas.Unity.Editor">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Editor\Entitas.Unity.Editor.dll</HintPath>
-     </Reference>
-     <Reference Include="Entitas.CodeGeneration.Attributes">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Entitas.CodeGeneration.Attributes.dll</HintPath>
-     </Reference>
-     <Reference Include="Entitas.Unity">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Entitas.Unity.dll</HintPath>
-     </Reference>
-     <Reference Include="Unity.VisualScripting.IonicZip">
-     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.visualscripting@1.7.8\Editor\VisualScripting.Core\Dependencies\DotNetZip\Unity.VisualScripting.IonicZip.dll</HintPath>
-     </Reference>
-     <Reference Include="DesperateDevs.Reflection">
-     <HintPath>F:\myself\jssj\Jssj\Assets\DesperateDevs\DesperateDevs.Reflection.dll</HintPath>
-     </Reference>
-     <Reference Include="Entitas.VisualDebugging.Unity.Editor">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Editor\Entitas.VisualDebugging.Unity.Editor.dll</HintPath>
-     </Reference>
-     <Reference Include="Unity.Burst.Cecil.Pdb">
-     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.burst@1.6.6\Unity.Burst.CodeGen\Unity.Burst.Cecil.Pdb.dll</HintPath>
-     </Reference>
-     <Reference Include="log4netPlastic">
-     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.collab-proxy@1.17.1\Lib\Editor\PlasticSCM\log4netPlastic.dll</HintPath>
-     </Reference>
-     <Reference Include="ReportGeneratorMerged">
-     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.testtools.codecoverage@1.0.1\lib\ReportGenerator\ReportGeneratorMerged.dll</HintPath>
-     </Reference>
-     <Reference Include="Newtonsoft.Json">
-     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.0.2\Runtime\Newtonsoft.Json.dll</HintPath>
-     </Reference>
-     <Reference Include="Entitas.Migration.Unity.Editor">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Editor\Entitas.Migration.Unity.Editor.dll</HintPath>
-     </Reference>
      <Reference Include="Unity.Plastic.Newtonsoft.Json">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.collab-proxy@1.17.1\Lib\Editor\PlasticSCM\Unity.Plastic.Newtonsoft.Json.dll</HintPath>
      </Reference>
@@ -407,14 +359,17 @@
      <Reference Include="Unity.Burst.Cecil.Mdb">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.burst@1.6.6\Unity.Burst.CodeGen\Unity.Burst.Cecil.Mdb.dll</HintPath>
      </Reference>
-     <Reference Include="Unity.VisualScripting.TextureAssets">
-     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.visualscripting@1.7.8\Editor\VisualScripting.Core\EditorAssetResources\Unity.VisualScripting.TextureAssets.dll</HintPath>
+     <Reference Include="Unity.VisualScripting.IonicZip">
+     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.visualscripting@1.7.8\Editor\VisualScripting.Core\Dependencies\DotNetZip\Unity.VisualScripting.IonicZip.dll</HintPath>
      </Reference>
-     <Reference Include="DesperateDevs.Unity">
-     <HintPath>F:\myself\jssj\Jssj\Assets\DesperateDevs\DesperateDevs.Unity.dll</HintPath>
+     <Reference Include="Unity.Burst.Cecil.Pdb">
+     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.burst@1.6.6\Unity.Burst.CodeGen\Unity.Burst.Cecil.Pdb.dll</HintPath>
      </Reference>
      <Reference Include="Unity.Burst.Cecil">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.burst@1.6.6\Unity.Burst.CodeGen\Unity.Burst.Cecil.dll</HintPath>
+     </Reference>
+     <Reference Include="log4netPlastic">
+     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.collab-proxy@1.17.1\Lib\Editor\PlasticSCM\log4netPlastic.dll</HintPath>
      </Reference>
      <Reference Include="Unity.Burst.Cecil.Rocks">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.burst@1.6.6\Unity.Burst.CodeGen\Unity.Burst.Cecil.Rocks.dll</HintPath>
@@ -422,17 +377,17 @@
      <Reference Include="Unity.VisualScripting.Antlr3.Runtime">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.visualscripting@1.7.8\Runtime\VisualScripting.Flow\Dependencies\NCalc\Unity.VisualScripting.Antlr3.Runtime.dll</HintPath>
      </Reference>
-     <Reference Include="DesperateDevs.Unity.Editor">
-     <HintPath>F:\myself\jssj\Jssj\Assets\DesperateDevs\Editor\DesperateDevs.Unity.Editor.dll</HintPath>
+     <Reference Include="Unity.VisualScripting.TextureAssets">
+     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.visualscripting@1.7.8\Editor\VisualScripting.Core\EditorAssetResources\Unity.VisualScripting.TextureAssets.dll</HintPath>
      </Reference>
-     <Reference Include="Entitas.VisualDebugging.Unity">
-     <HintPath>F:\myself\jssj\Jssj\Assets\Entitas\Entitas.VisualDebugging.Unity.dll</HintPath>
+     <Reference Include="ReportGeneratorMerged">
+     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.testtools.codecoverage@1.0.1\lib\ReportGenerator\ReportGeneratorMerged.dll</HintPath>
+     </Reference>
+     <Reference Include="Newtonsoft.Json">
+     <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.0.2\Runtime\Newtonsoft.Json.dll</HintPath>
      </Reference>
      <Reference Include="Mono.Cecil">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.nuget.mono-cecil@1.11.4\Mono.Cecil.dll</HintPath>
-     </Reference>
-     <Reference Include="DesperateDevs.Serialization">
-     <HintPath>F:\myself\jssj\Jssj\Assets\DesperateDevs\DesperateDevs.Serialization.dll</HintPath>
      </Reference>
      <Reference Include="unityplastic">
      <HintPath>F:\myself\jssj\Jssj\Library\PackageCache\com.unity.collab-proxy@1.17.1\Lib\Editor\PlasticSCM\unityplastic.dll</HintPath>
