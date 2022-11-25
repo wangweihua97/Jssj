@@ -14,7 +14,7 @@ using NotImplementedException = System.NotImplementedException;
 namespace Game.ECS
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public partial class SGroundRenderSystem  : SystemBase
+    public partial class SGroundRenderSystem  : SystemBase ,ICustomSystem
     {
         private const int PLAN_SIZE = 10;
         private Mesh planMesh;
@@ -29,7 +29,7 @@ namespace Game.ECS
         protected override void OnCreate()
         {
             base.OnCreate();
-            mapSize = FlowFieldMap.Size;
+            mapSize = Setting.MapSize;
             planWorldMat = new NativeArray<Matrix4x4>(100,Allocator.Persistent);
             temp_mat = new Matrix4x4[1000];
             planWorldMatJob = new PlanWorldMatJob();

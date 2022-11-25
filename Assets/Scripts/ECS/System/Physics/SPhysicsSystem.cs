@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Game.ECS;
+using Game.GlobalSetting;
 using Game.Map;
 using Unity.Burst;
 using Unity.Collections;
@@ -92,7 +93,7 @@ namespace Game.ECS
                     float2 newPos;
                     float2 v;
                     
-                    if (!MapService.FlowFieldMap.CanWalk(MapService.FlowFieldMap.map[xy.y * FlowFieldMap.Size.x + xy.x].CellType))
+                    if (!MapService.FlowFieldMap.CanWalk(MapService.FlowFieldMap.map[xy.y * Setting.MapSize.x + xy.x].CellType))
                     {
                         float2 offset = math.abs(posXY - xy - new float2(0.5f,0.5f));
                         bool is_x_bigger = offset.x > offset.y;
@@ -121,7 +122,7 @@ namespace Game.ECS
                     }
                     //newPos = posXY + newDir * newLength;
                     int2 newXy = new int2((int)newPos.x ,(int)newPos.y);
-                    if(newXy.x < 0 || newXy.x >= FlowFieldMap.Size.x || newXy.y < 0 || newXy.y>= FlowFieldMap.Size.y)
+                    if(newXy.x < 0 || newXy.x >= Setting.MapSize.x || newXy.y < 0 || newXy.y>= Setting.MapSize.y)
                         return;
                     if (newXy.Equals(xy))
                     {
@@ -140,7 +141,7 @@ namespace Game.ECS
 
         void Update(int2 xy,uint id, float2 pos, float radius)
         {
-            var colliders = MapService.FlowFieldMap.map[xy.y * FlowFieldMap.Size.x + xy.x].Colliders;
+            var colliders = MapService.FlowFieldMap.map[xy.y * Setting.MapSize.x + xy.x].Colliders;
             Collider collider = new Collider();
             collider.pos = pos;
             collider.radius = radius;
@@ -162,13 +163,13 @@ namespace Game.ECS
             collider.pos = pos;
             collider.radius = radius;
             collider.id = id;
-            MapService.FlowFieldMap.map[xy.y * FlowFieldMap.Size.x + xy.x].Colliders.Add(collider);
+            MapService.FlowFieldMap.map[xy.y * Setting.MapSize.x + xy.x].Colliders.Add(collider);
         }
         
 
         void Delete(int2 xy,uint id)
         {
-            var colliders = MapService.FlowFieldMap.map[xy.y * FlowFieldMap.Size.x + xy.x].Colliders;
+            var colliders = MapService.FlowFieldMap.map[xy.y * Setting.MapSize.x + xy.x].Colliders;
             for (int i = 0; i < colliders.Count; i++)
             {
                 if (colliders[i].id == id)
@@ -201,12 +202,12 @@ namespace Game.ECS
              int2 meXy = new int2((int)pos.x ,(int)pos.y);
             foreach (var xy in xys)
             {
-                if (xy.x < 0 || xy.x >= FlowFieldMap.Size.x || xy.y < 0 || xy.y >= FlowFieldMap.Size.y)
+                if (xy.x < 0 || xy.x >= Setting.MapSize.x || xy.y < 0 || xy.y >= Setting.MapSize.y)
                 {
                     continue;
                 }
                     
-                var cell = MapService.FlowFieldMap.map[xy.y * FlowFieldMap.Size.x + xy.x];
+                var cell = MapService.FlowFieldMap.map[xy.y * Setting.MapSize.x + xy.x];
                 
                 if(!CheckCollision(pos ,0.5f,xy + new float2(0.5f, 0.5f),1.5f))
                     continue;

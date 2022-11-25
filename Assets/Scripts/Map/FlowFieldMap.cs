@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Game.GlobalSetting;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace Game.Map
 {
     public class FlowFieldMap
     {
-        public static int2 Size = new int2(200,200);
+        public int2 Size = Setting.MapSize;
         private const float MAX_WEIGHT = 99999f;
         public MapCell[] map;
         public int2[] monsterEntrance;

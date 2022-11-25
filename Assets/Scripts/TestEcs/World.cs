@@ -1,4 +1,5 @@
 ﻿using System;
+using Game.GlobalSetting;
 using Game.Map;
 using UnityEngine;
 using Unity.Entities;
@@ -17,12 +18,12 @@ namespace TestEcs
             ;*/
             FlowFieldMap fieldMap = AutoGenerate.Generate();
             fieldMap.RefreshFlowField(fieldMap.center);
-            for (int i = 0; i < FlowFieldMap.Size.x; i++)
+            for (int i = 0; i < Setting.MapSize.x; i++)
             {
-                for (int j = 0; j < FlowFieldMap.Size.y; j++)
+                for (int j = 0; j < Setting.MapSize.y; j++)
                 {
                     int2 pos = new int2(i ,j);
-                    var  cell = fieldMap.map[j * FlowFieldMap.Size.x + i];
+                    var  cell = fieldMap.map[j * Setting.MapSize.x + i];
                     GameObject p = GameObject.Instantiate(Plane);
                     p.transform.position = new Vector3(pos.x ,0,pos.y);
                     Plane plane = p.GetComponent<Plane>();

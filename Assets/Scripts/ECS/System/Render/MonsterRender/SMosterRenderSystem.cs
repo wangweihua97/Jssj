@@ -16,7 +16,7 @@ namespace Game.ECS
 {
     
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public partial class SMosterRenderSystem  : SystemBase
+    public partial class SMosterRenderSystem  : SystemBase ,ICustomSystem
     {
         
         
@@ -188,14 +188,26 @@ namespace Game.ECS
                     //#endif
                     int type = cms.MonsterType;
                     MonsterAnimInfo monsterAnimInfo = monsterAnimInfos[type];
-                    float playTime = math.fmod(cma.cur_playTime + deltaTime* monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.run_anim_time);
-                    cma.cur_playTime = playTime;
                     TempAnimInfo tempAnimInfo;
-                    tempAnimInfo.cur_play_time = monsterAnimInfo.run_anim_pos+playTime; 
+                    float playTime = 0;
+                    if (cms.CurState == 0)
+                    {
+                        playTime = math.fmod(cma.cur_playTime + deltaTime* monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.run_anim_time);
+                        tempAnimInfo.cur_play_time = monsterAnimInfo.run_anim_pos+playTime; 
+                    }
+                    else
+                    {
+                        playTime = math.min(cma.cur_playTime + deltaTime* monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.death_anim_time);
+                        tempAnimInfo.cur_play_time = monsterAnimInfo.death_anim_pos+playTime; 
+                    }
+                    
+                    
                     tempAnimInfo.type = type;
                     tempAnimInfo.posx = cp.position.x;
                     tempAnimInfo.posy = cp.position.y;
                     tempAnimInfo.rotation = cr.rotation;
+                    
+                    cma.cur_playTime = playTime;
                     
                     int count = monsterCount[type];
                     int index = type * MAX_MONSTER_SHOW_COUNT + count;

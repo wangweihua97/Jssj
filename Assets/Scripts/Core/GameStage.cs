@@ -19,12 +19,6 @@ namespace Core
             GameWorld = new GameWorld();
             GameWorld.Plane = Plane;
             GameWorld.Init();
-            GameWorld.CreatMonster();
-        }
-
-        private void Start()
-        {
-            
         }
     }
 }

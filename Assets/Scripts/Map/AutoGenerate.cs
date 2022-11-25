@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Game.GlobalSetting;
 using Unity.Mathematics;
 using Random = UnityEngine.Random;
 
@@ -16,13 +17,13 @@ namespace Game.Map
         /*private static int ObstacleNumber = 500;
         private static int RandomObstacleDeep = 8;
         private static int2 ObstacleRange = new int2(10,50);*/
-        private static int ObstacleNumber = 100;
-        private static int RandomObstacleDeep = 10;
-        private static int2 ObstacleRange = new int2(30,70);
+        private static int ObstacleNumber = Setting.ObstacleNumber;
+        private static int RandomObstacleDeep = Setting.RandomObstacleDeep;
+        private static int2 ObstacleRange = Setting.ObstacleRange;
         public static FlowFieldMap Generate()
         {
             FlowFieldMap fieldMap = new FlowFieldMap();
-            fieldMap.center = FlowFieldMap.Size/2;
+            fieldMap.center = Setting.MapSize/2;
             GenerateEntrance(fieldMap);
             GenerateAllObstacles(fieldMap);
             return fieldMap;
@@ -32,7 +33,7 @@ namespace Game.Map
         {
             var Entrance = new int2[4];
             //left
-            int left = Random.Range(20, FlowFieldMap.Size.y - 20);
+            int left = Random.Range(20, Setting.MapSize.y - 20);
             Entrance[0] = new int2(0,left);
             fieldMap.SetCellType(Entrance[0], CellType.MonsterEntrance);
             for (int i = 1; i <= 2; i++)
@@ -41,8 +42,8 @@ namespace Game.Map
                 fieldMap.SetCellType(Entrance[0] - new int2(0,i * 1), CellType.MonsterEntrance);
             }
             //up
-            int up = Random.Range(20, FlowFieldMap.Size.x - 20);
-            Entrance[1] = new int2(up,FlowFieldMap.Size.y - 1);
+            int up = Random.Range(20, Setting.MapSize.x - 20);
+            Entrance[1] = new int2(up,Setting.MapSize.y - 1);
             fieldMap.SetCellType(Entrance[1], CellType.MonsterEntrance);
             for (int i = 1; i <= 2; i++)
             {
@@ -50,8 +51,8 @@ namespace Game.Map
                 fieldMap.SetCellType(Entrance[1] - new int2(i * 1,0), CellType.MonsterEntrance);
             }
             //right
-            int right = Random.Range(20, FlowFieldMap.Size.y - 20);
-            Entrance[2] = new int2(FlowFieldMap.Size.x -1,right);
+            int right = Random.Range(20, Setting.MapSize.y - 20);
+            Entrance[2] = new int2(Setting.MapSize.x -1,right);
             fieldMap.SetCellType(Entrance[2], CellType.MonsterEntrance);
             for (int i = 1; i <= 2; i++)
             {
@@ -59,7 +60,7 @@ namespace Game.Map
                 fieldMap.SetCellType(Entrance[2] - new int2(0,i * 1), CellType.MonsterEntrance);
             }
             //down
-            int down = Random.Range(20, FlowFieldMap.Size.x - 20);
+            int down = Random.Range(20, Setting.MapSize.x - 20);
             Entrance[3] = new int2(down,0);
             fieldMap.SetCellType(Entrance[3], CellType.MonsterEntrance);
             for (int i = 1; i <= 2; i++)
@@ -81,12 +82,12 @@ namespace Game.Map
 
         static void GenerateObstacles(FlowFieldMap fieldMap)
         {
-            int2 random_obstacle = new int2(Random.Range(0,FlowFieldMap.Size.x),
-                Random.Range(0,FlowFieldMap.Size.y));
+            int2 random_obstacle = new int2(Random.Range(0,Setting.MapSize.x),
+                Random.Range(0,Setting.MapSize.y));
             while (!fieldMap.CanWalkAndNotMonsterEntrance(random_obstacle))
             {
-                random_obstacle = new int2(Random.Range(0,FlowFieldMap.Size.x),
-                    Random.Range(0,FlowFieldMap.Size.y -1));
+                random_obstacle = new int2(Random.Range(0,Setting.MapSize.x),
+                    Random.Range(0,Setting.MapSize.y -1));
             }
 
             List<(int2 ,uint)> changed_cellType = new List<(int2 ,uint)>();

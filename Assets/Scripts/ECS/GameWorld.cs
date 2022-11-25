@@ -1,5 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 using Core;
+using Game.GlobalSetting;
 using Game.Map;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -10,16 +14,20 @@ namespace Game.ECS
 {
     public class GameWorld
     {
+        public static GameWorld Instance;
         public GameObject Plane;
+        public List<object> Systems;
         public void Init()
         {
+            Instance = this;
+            Systems = new List<object>();
             GameStage.GameContext.GetService<MapService>().GenerateMap();
-            for (int i = 0; i < FlowFieldMap.Size.x; i++)
+            for (int i = 0; i < Setting.MapSize.x; i++)
             {
-                for (int j = 0; j < FlowFieldMap.Size.y; j++)
+                for (int j = 0; j < Setting.MapSize.y; j++)
                 {
                     int2 pos = new int2(i ,j);
-                    var  cell = MapService.FlowFieldMap.map[j * FlowFieldMap.Size.x + i];
+                    var  cell = MapService.FlowFieldMap.map[j * Setting.MapSize.x + i];
                     /*GameObject p = GameObject.Instantiate(Plane);
                     p.transform.position = new Vector3(pos.x + 0.5f ,0,pos.y+ 0.5f);
                     TestEcs.Plane plane = p.GetComponent<TestEcs.Plane>();
@@ -34,22 +42,26 @@ namespace Game.ECS
                     }*/
                 }
             }
-            
-            SPhysicsJob2System sPhysicsJob2System =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SPhysicsJob2System>();
-            sPhysicsJob2System.Init();
-            
-            SPathfindingJobSystem sPathfinding =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SPathfindingJobSystem>();
-            sPathfinding.Init();
-            
-            SMosterRenderSystem sMosterAnimSystem =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SMosterRenderSystem>();
-            sMosterAnimSystem.Init();
-            
-            SGroundRenderSystem sGroundRenderSystem =
-                World.DefaultGameObjectInjectionWorld.GetExistingSystem<SGroundRenderSystem>();
-            sGroundRenderSystem.Init();
+
+            foreach (var type in  Assembly.GetAssembly(typeof(GameWorld)).GetTypes())
+            {
+                if (type.IsSubclassOf(typeof(SystemBase)) && typeof(ICustomSystem).IsAssignableFrom(type))
+                {
+                    MethodInfo GetComponent_Method=this.GetType().GetMethod("AddSystem" ,new Type[]{});
+                    MethodInfo MakeGeneric_GetComponent_Method = GetComponent_Method.MakeGenericMethod(type);
+                    MakeGeneric_GetComponent_Method.Invoke(this, null);
+                }
+            }
+
+            foreach (var system in Systems)
+            {
+                (system as ICustomSystem).Init();
+            }
+        }
+
+        public void AddSystem<T>() where T:SystemBase ,ICustomSystem
+        {
+            Systems.Add(World.DefaultGameObjectInjectionWorld.GetExistingSystem<T>());
         }
         
         public async void CreatMonster()
@@ -60,9 +72,9 @@ namespace Game.ECS
             await Task.Delay(100);
             for (int i = 0; i < 10000; i++)
             {
-                int2 random_pos = new int2(UnityEngine.Random.Range(0,FlowFieldMap.Size.x),
-                    Random.Range(0,FlowFieldMap.Size.y));
-                if (MapService.FlowFieldMap.CanWalk(random_pos))
+                int2 random_pos = new int2(UnityEngine.Random.Range(0,Setting.MapSize.x),
+                    Random.Range(0,Setting.MapSize.y));
+                if (SPhysicsJob2System.MapBlock[random_pos.y * Setting.MapSize.x + random_pos.x].canWalk)
                 {
                     monsterSpawnerSystem.CreatMonster(random_pos);
                 }

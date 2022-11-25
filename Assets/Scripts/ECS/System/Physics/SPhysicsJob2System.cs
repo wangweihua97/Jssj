@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Game.ECS;
+using Game.GlobalSetting;
 using Game.Map;
 using Unity.Burst;
 using Unity.Collections;
@@ -11,13 +12,17 @@ using UnityEngine;
 namespace Game.ECS
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    public partial class SPhysicsJob2System : SystemBase
+    public partial class SPhysicsJob2System : SystemBase ,ICustomSystem
     {
         EntityQuery m_Group;
         const float SpringForce = 100.0f;
-        private const int MapNodeMaxContainEntitieCount = 16;
-        private NativeArray<EntitieInfo> mapNodeEs;
-        private NativeArray<MapNode2Struct> canWalks;
+        public const int MapNodeMaxContainEntitieCount = 16;
+        public static NativeArray<EntitieInfo> MapNodeEs;
+        public static NativeArray<MapNode2Struct> MapBlock;
+        
+        
+        private NativeArray<EntitieInfo> m_es;
+        private NativeArray<EntitieInfo> m_result;
         private MyJob2 jobData;
         private MapClearJob mapClearJob;
         private UpdateMapJob updateMapJob;
@@ -28,28 +33,31 @@ namespace Game.ECS
         { 
             m_Group = GetEntityQuery(ComponentType.ReadOnly<CRotation>(),
                 ComponentType.ReadOnly<CPosition>(),
-                ComponentType.ReadOnly<CMove>()
+                ComponentType.ReadOnly<CMove>(),
+                ComponentType.ReadOnly<CMonsterState>()
                 );
         }
 
         public void Init()
         {
-            int xCount = FlowFieldMap.Size.x;
-            int yCount = FlowFieldMap.Size.y;
-            mapNodeEs = 
+            int xCount = Setting.MapSize.x;
+            int yCount = Setting.MapSize.y;
+            MapNodeEs = 
                 new NativeArray<EntitieInfo>(xCount * yCount * MapNodeMaxContainEntitieCount, Allocator.Persistent);
-            canWalks
+            MapBlock
                 = new NativeArray<MapNode2Struct>(xCount * yCount, Allocator.Persistent);
             
             MapCanWalkJob mapCanWalkJob = new MapCanWalkJob();
             mapCanWalkJob.xCount = xCount;
-            mapCanWalkJob.canWalks = canWalks;
+            mapCanWalkJob.MapBlock = MapBlock;
             JobHandle mapCanWalkJobHandle = mapCanWalkJob.Schedule(xCount * yCount, 1);  
             mapCanWalkJobHandle.Complete();
 
             updateMapJob = new UpdateMapJob();
             jobData = new MyJob2();
             mapClearJob = new MapClearJob();
+            m_es = new NativeArray<EntitieInfo>(10000, Allocator.Persistent);
+            m_result = new NativeArray<EntitieInfo>(10000, Allocator.Persistent);
         }
         
         [BurstCompile]
@@ -61,7 +69,7 @@ namespace Game.ECS
             public float deltaTime;
             public float springForce;
             [ReadOnly]
-            public NativeArray<EntitieInfo> mapNodeEs;
+            public NativeArray<EntitieInfo> MapNodeEs;
             [ReadOnly]
             public NativeArray<MapNode2Struct> mapCanWalk;
             [ReadOnly]
@@ -73,6 +81,10 @@ namespace Game.ECS
             public void Execute(int i)
             {
                 EntitieInfo source = es[i];
+                if (source.isAlive == false)
+                {
+                    return;
+                }
                 int2 curXy = new int2((int)source.position.x ,(int)source.position.y);
                 int2 xy = curXy;
 
@@ -175,8 +187,9 @@ namespace Game.ECS
                         
                      for (int i = 0; i < mapNode2Struct.count; i++)
                      {
-                         EntitieInfo entitieInfo = mapNodeEs[xy.y * (xCount * zCount) + xy.x * zCount + i];
-                         if(id.Equals(entitieInfo.id))
+                         EntitieInfo entitieInfo = MapNodeEs[xy.y * (xCount * zCount) + xy.x * zCount + i];
+                         
+                         if(id.Equals(entitieInfo.id) || !entitieInfo.isAlive)
                              continue;
                          if(CheckCollision(pos ,radius,entitieInfo.position,entitieInfo.radius))
                              f += CollideCircular(pos ,radius,entitieInfo.position,
@@ -211,12 +224,12 @@ namespace Game.ECS
         [BurstCompile]
         public struct MapClearJob : IJobParallelFor
         {
-            public NativeArray<MapNode2Struct> canWalks;
+            public NativeArray<MapNode2Struct> MapBlock;
             public void Execute(int index)
             {
-                MapNode2Struct mapNode2Struct = canWalks[index];
+                MapNode2Struct mapNode2Struct = MapBlock[index];
                 mapNode2Struct.count = 0;
-                canWalks[index] = mapNode2Struct;
+                MapBlock[index] = mapNode2Struct;
             }
         }
         
@@ -227,19 +240,19 @@ namespace Game.ECS
             public int zCount;
             [ReadOnly]
             public NativeArray<EntitieInfo> es;
-            public NativeArray<MapNode2Struct> canWalks;
-            public NativeArray<EntitieInfo> mapNodeEs;
+            public NativeArray<MapNode2Struct> MapBlock;
+            public NativeArray<EntitieInfo> MapNodeEs;
             public void Execute()
             {
                 for (int index = 0; index < es.Length; index++)
                 {
                     EntitieInfo entitieInfo = es[index];
                     int2 xy = new int2((int)entitieInfo.position.x ,(int)entitieInfo.position.y);
-                    MapNode2Struct mapNode2Struct = canWalks[xy.y * xCount + xy.x];
-                    mapNodeEs[xy.y * (xCount * zCount) + xy.x * zCount + mapNode2Struct.count] = entitieInfo;
+                    MapNode2Struct mapNode2Struct = MapBlock[xy.y * xCount + xy.x];
+                    MapNodeEs[xy.y * (xCount * zCount) + xy.x * zCount + mapNode2Struct.count] = entitieInfo;
                     if(mapNode2Struct.count < zCount)
                         mapNode2Struct.count += 1;
-                    canWalks[xy.y * xCount + xy.x] = mapNode2Struct;
+                    MapBlock[xy.y * xCount + xy.x] = mapNode2Struct;
                 }
             }
         }
@@ -247,7 +260,7 @@ namespace Game.ECS
         public struct MapCanWalkJob: IJobParallelFor
         {
             public int xCount;
-            public NativeArray<MapNode2Struct> canWalks;
+            public NativeArray<MapNode2Struct> MapBlock;
             public void Execute(int index)
             {
                 MapNode2Struct mapNode2Struct;
@@ -256,32 +269,34 @@ namespace Game.ECS
                 int x = index - y * xCount;
                 mapNode2Struct.canWalk=
                     MapService.FlowFieldMap.map[y * xCount + x].CellType < 10;
-                canWalks[index] = mapNode2Struct;
+                MapBlock[index] = mapNode2Struct;
             }
         }
 
         protected override void  OnUpdate()
         {
             var deltaTime = Time.DeltaTime;
-            int xCount = FlowFieldMap.Size.x;
-            int yCount = FlowFieldMap.Size.y;
+            int xCount = Setting.MapSize.x;
+            int yCount = Setting.MapSize.y;
             int zCount = MapNodeMaxContainEntitieCount;
             
             
             int dataCount = m_Group.CalculateEntityCount();
-            NativeArray<EntitieInfo> es
-                = new NativeArray<EntitieInfo>(dataCount, Allocator.Persistent);
-            NativeArray<EntitieInfo> result
-                = new NativeArray<EntitieInfo>(dataCount, Allocator.Persistent);
-            
-            mapClearJob.canWalks = canWalks;
+            if (dataCount > this.m_es.Length)
+            {
+                ResizeCapacity(dataCount);
+            }
+
+            NativeArray<EntitieInfo> es = this.m_es;
+            NativeArray<EntitieInfo> result= this.m_result;
+            mapClearJob.MapBlock = MapBlock;
             JobHandle mapClearHandle = mapClearJob.Schedule(xCount * yCount, 1);  
             mapClearHandle.Complete();
             
             
             Entities
                 .WithStoreEntityQueryInField(ref m_Group)
-                .ForEach((int entityInQueryIndex, in CRotation cr ,in CPosition cp , in CMove cm) =>
+                .ForEach((int entityInQueryIndex, in CRotation cr ,in CPosition cp , in CMove cm ,in CMonsterState cMonsterState) =>
                 {
                     EntitieInfo entitieInfo;
                     entitieInfo.index = entityInQueryIndex;
@@ -293,6 +308,7 @@ namespace Game.ECS
                     entitieInfo.f = cm.f;
                     entitieInfo.last_f = cm.last_f;
                     entitieInfo.i_m = cm.i_m;
+                    entitieInfo.isAlive = cMonsterState.CurState != 2;
                     es[entityInQueryIndex] = entitieInfo;
 
                 })
@@ -302,14 +318,14 @@ namespace Game.ECS
             updateMapJob.es = es;
             updateMapJob.xCount = xCount;
             updateMapJob.zCount = zCount;
-            updateMapJob.mapNodeEs = mapNodeEs;
-            updateMapJob.canWalks = canWalks;
+            updateMapJob.MapNodeEs = MapNodeEs;
+            updateMapJob.MapBlock = MapBlock;
             
             JobHandle updateHandle =updateMapJob.Schedule();
             updateHandle.Complete();
             
-            jobData.mapNodeEs = mapNodeEs;
-            jobData.mapCanWalk = canWalks;
+            jobData.MapNodeEs = MapNodeEs;
+            jobData.mapCanWalk = MapBlock;
             jobData.es = es;
             jobData.xCount = xCount;
             jobData.yCount = yCount;
@@ -321,25 +337,48 @@ namespace Game.ECS
             JobHandle handle = jobData.Schedule(dataCount, 1);  
             //等待作业的完成
             handle.Complete();
+
+            NativeArray<MonsterBeHit> monsterBeHits = CRayHitSystem.MonsterBeHits;
+            
             Entities
                 .WithName("UpdatePosition")
                 .WithBurst()
-                .ForEach((int entityInQueryIndex,ref CPosition cPosition, ref CRotation cRotation ,ref CMove move) =>
+                .ForEach((int entityInQueryIndex,ref CPosition cPosition, ref CRotation cRotation ,ref CMove move ,ref CMonsterState cMonsterState ,ref CMonsterAnim cMonsterAnim) =>
                 {
+                    if (cMonsterState.CurState == 2)
+                    {
+                        cMonsterState.curDeathTime += deltaTime;
+                        return;
+                    }
                     EntitieInfo entitieInfo = result[entityInQueryIndex];
+                    MonsterBeHit monsterBeHit = monsterBeHits[entityInQueryIndex];
                     move.v = entitieInfo.v;
                     move.f = entitieInfo.f;
                     cPosition.position = entitieInfo.position;
+                    
+                    if (monsterBeHit.damage > 0.01f)
+                    {
+                        cMonsterState.curHP -= monsterBeHit.damage;
+                        if (cMonsterState.curHP < 0)
+                        {
+                            cMonsterState.CurState = 2;
+                            cMonsterState.curDeathTime = 0.0f;
+                            cMonsterAnim.cur_playTime = 0;
+                        }
+                    }
+                    
                 }).ScheduleParallel();
             
             Dependency.Complete();
-            es.Dispose();
-            result.Dispose();
         }
         
-        
-
-
+        void ResizeCapacity(int needCount)
+        {
+            m_es.Dispose();
+            m_es = new NativeArray<EntitieInfo>(needCount, Allocator.Persistent);
+            m_result.Dispose();
+            m_result = new NativeArray<EntitieInfo>(needCount, Allocator.Persistent);
+        }
         public void OnDestroy(ref SystemState state)
         {
         }

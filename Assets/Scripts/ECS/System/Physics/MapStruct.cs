@@ -24,6 +24,7 @@ namespace Game.ECS
     {
         public float2 dir;
         public bool canWalk;
+        public bool isTowar;
     }
 
     [BurstCompile]
@@ -38,5 +39,6 @@ namespace Game.ECS
         public float2 f;
         public float2 last_f;
         public float i_m;
+        public bool isAlive;
     }
 }

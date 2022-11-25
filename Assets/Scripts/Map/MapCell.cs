@@ -57,5 +57,10 @@ namespace Game.Map
         Tree = 2,
     }
 
+    public enum TowerCount
+    {
+        Default = 2
+    }
+
 
 }

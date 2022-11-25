@@ -1,4 +1,5 @@
-﻿using Game.Map;
+﻿using Game.GlobalSetting;
+using Game.Map;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -25,7 +26,7 @@ namespace Game.ECS
                     int2 xy = new int2((int)position.position.x ,(int)position.position.y);
                     if (MapService.FlowFieldMap.CanWalk(xy))
                     {
-                        float2 dir = MapService.FlowFieldMap.map[xy.y * FlowFieldMap.Size.x + xy.x].Dir;
+                        float2 dir = MapService.FlowFieldMap.map[xy.y * Setting.MapSize.x + xy.x].Dir;
                         move.f =  4 * (dir * move.i_m  - move.v);
                     }
                     else

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Game.ECS;
+using Game.GlobalSetting;
 using Game.Map;
 using Unity.Burst;
 using Unity.Collections;
@@ -157,8 +158,8 @@ namespace Game.ECS
         {
             return;
             var deltaTime = Time.DeltaTime;
-            int xCount = FlowFieldMap.Size.x;
-            int yCount = FlowFieldMap.Size.y;
+            int xCount = Setting.MapSize.x;
+            int yCount = Setting.MapSize.y;
             List<EntitieInfo>[] es = new List<EntitieInfo>[xCount* yCount];
             for (int i = 0; i < xCount; i++)
             {
@@ -193,7 +194,7 @@ namespace Game.ECS
                     entitieInfo.f = cm.f;
                     entitieInfo.last_f = cm.last_f;
                     entitieInfo.i_m = cm.i_m;
-                    
+                    entitieInfo.isAlive = true;
                     int2 xy = new int2((int)cp.position.x ,(int)cp.position.y);
                     es[xy.y * xCount + xy.x].Add(entitieInfo);
                 })
