@@ -7,6 +7,7 @@ using Unity.Mathematics;
 namespace Game.ECS
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [AlwaysUpdateSystem]
     public partial class STowerSpawnerSystem : SystemBase
     {
         BeginInitializationEntityCommandBufferSystem m_TowerCommandBufferSystem;
@@ -31,6 +32,32 @@ namespace Game.ECS
                 }
                 AddList.Clear();
             }
+            
+            var commandBuffer = m_TowerCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+            int2 mapSize = Setting.MapSize;
+
+            var mapNodeInfos= SPathfindingJobSystem.MapNodeInfos;
+            var mapBlock = SPhysicsJob2System.MapBlock;
+            Entities
+                .WithBurst()
+                .ForEach((Entity entity, int entityInQueryIndex,in CTowerInfo cTowerInfo,in CTowerState cTowerState
+                    ,in CTowerTransform cTowerTransform) =>
+                {
+                    if (cTowerState.curState == 2)
+                    {
+                        commandBuffer.DestroyEntity(entityInQueryIndex ,entity);
+                        MapNodeInfo mapNodeDir = mapNodeInfos[cTowerTransform.xy.y * Setting.MapSize.x + cTowerTransform.xy.x];
+                        mapNodeDir.canWalk = true;
+                        mapNodeDir.isTowar = false;
+                        mapNodeInfos[cTowerTransform.xy.y * Setting.MapSize.x + cTowerTransform.xy.x] = mapNodeDir;
+            
+                        MapNode2Struct mapNode2Struct =mapBlock[cTowerTransform.xy.y * Setting.MapSize.x + cTowerTransform.xy.x];
+                        mapNode2Struct.canWalk = true;
+                        mapBlock[cTowerTransform.xy.y * Setting.MapSize.x + cTowerTransform.xy.x] = mapNode2Struct;
+                    }
+                }).Schedule();
+            m_TowerCommandBufferSystem.AddJobHandleForProducer(Dependency);
+            Dependency.Complete();
         }
 
         public void CreatTower(int2 xy ,int type)
@@ -43,33 +70,39 @@ namespace Game.ECS
             {
                 type = type,
                 atkDamage = 30,
-                atkInterval = 0.3f,
-                atkRange = 4.0f,
-                maxHP = 1000,
+                atkInterval = 0.2f,
+                atkRange = 8.0f,
+                maxHP = 200,
                 atkPosOffset = 0.3f,
-                bulletSpeed = 10.0f
+                bulletSpeed = 30.0f
             });
             float random_IdleTime = UnityEngine.Random.Range(0.0f, 1.0f);
             EntityManager.AddComponentData(instance, new CTowerState()
             {
+                curState = 0,
                 curAtkInterval = 0,
                 curIdleTime = random_IdleTime,
-                curHP = 1000
+                curHP = 200
             });
             float random_rotation = UnityEngine.Random.Range(0.0f, 1.0f);
             EntityManager.AddComponentData(instance, new CTowerTransform() {
                 rotation = random_rotation,
                 xy = xy
             });
+            
+            EntityManager.AddComponentData(instance, new CHpPlane()
+            {
+                max_show_time = 1.0f ,cur_show_time = 1.0f,percent = 1.0f
+            });
             Insert(xy ,type);
         }
         
         void Insert(int2 xy,int type)
         {
-            MapNodeDir mapNodeDir = SPathfindingJobSystem.MapDirs[xy.y * Setting.MapSize.x + xy.x];
+            MapNodeInfo mapNodeDir = SPathfindingJobSystem.MapNodeInfos[xy.y * Setting.MapSize.x + xy.x];
             mapNodeDir.canWalk = false;
             mapNodeDir.isTowar = true;
-            SPathfindingJobSystem.MapDirs[xy.y * Setting.MapSize.x + xy.x] = mapNodeDir;
+            SPathfindingJobSystem.MapNodeInfos[xy.y * Setting.MapSize.x + xy.x] = mapNodeDir;
             
             MapNode2Struct mapNode2Struct = SPhysicsJob2System.MapBlock[xy.y * Setting.MapSize.x + xy.x];
             mapNode2Struct.canWalk = false;

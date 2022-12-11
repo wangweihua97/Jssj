@@ -6,8 +6,12 @@ Shader "Unlit/VertAnimCharacter"
         _BaseColor("Base Color",Color)=(1,1,1,1)
         _AnimMap ("VAT 位置图",2D) = "black"{}
         _NormalMap("VAT 法线图",2D) = "black"{}
-        _PlayPos("播放位置" ,Range(0,1)) = 0.1
+        _PlayPos("播放位置" ,Range(0.01,1)) = 0.1
+        _RimLightWidth("_OutLineWidth" ,Range(0,1)) = 0.2
         [Toggle]_IsSpecular("是否开启高光", Float) = 1
+        [Toggle(_IS_OPEN_SHADOW_ON)]_IS_OPEN_SHADOW ("_IS_OPEN_SHADOW", Float) = 0
+        [Toggle(_IS_ADDLIGHTS_ON)]_IS_ADDLIGHTS ("_IS_ADDLIGHTS", Float) = 0
+        [Toggle(_IS_RimLight_ON)]_IS_RimLight ("_IS_RimLight_ON", Float) = 0
     }
     SubShader
     {
@@ -18,15 +22,18 @@ Shader "Unlit/VertAnimCharacter"
             "RenderType"="Opaque"
         }
         HLSLINCLUDE
+        #include "../Common/Common.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
        
         CBUFFER_START(UnityPerMaterial)
         float4 _BaseMap_ST;
         float4 _AnimMap_ST;
         half4 _BaseColor;
         half _IsSpecular;
+        half _RimLightWidth;
         CBUFFER_END
         UNITY_INSTANCING_BUFFER_START(Props)
              UNITY_DEFINE_INSTANCED_PROP(float, _PlayPos)
@@ -37,6 +44,7 @@ Shader "Unlit/VertAnimCharacter"
         
         TEXTURE2D(_AnimMap);
         SAMPLER(sampler_AnimMap);
+       
         ENDHLSL
 
         Pass
@@ -48,9 +56,11 @@ Shader "Unlit/VertAnimCharacter"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_instancing
-            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
-            
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _IS_OPEN_SHADOW_ON
+            #pragma multi_compile _ _IS_ADDLIGHTS_ON
+            #pragma multi_compile _ _IS_RimLight_ON
             TEXTURE2D(_NormalMap);
 
             struct Attributes
@@ -68,8 +78,19 @@ Shader "Unlit/VertAnimCharacter"
                 float3 normalWS : NORMAL;
                 float3 positionWS : TEXCOORD1;
                 float3 viewDirWS : TEXCOORD2;
+#ifdef _IS_RimLight_ON                
+                float3 normalVS : TEXCOORD3;
+                float4 scrPos : TEXCOORD4;
+#endif                
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
+            
+            float CorrectDepth(float rawDepth)
+            {
+                float persp = LinearEyeDepth(rawDepth ,_ZBufferParams);
+                float ortho = (_ProjectionParams.z-_ProjectionParams.y)*(1-rawDepth)+_ProjectionParams.y;
+                return lerp(persp,ortho,unity_OrthoParams.w);
+            }
 
             Varings vert(Attributes IN)
             {
@@ -96,19 +117,32 @@ Shader "Unlit/VertAnimCharacter"
                 OUT.uv=TRANSFORM_TEX(IN.uv,_BaseMap);
                 OUT.viewDirWS = GetCameraPositionWS() - positionInputs.positionWS;
                 OUT.normalWS = normalInputs.normalWS;
+#ifdef _IS_RimLight_ON                  
+                OUT.normalVS = normalize(mul(normalInputs.normalWS, UNITY_MATRIX_IT_MV));
+                OUT.scrPos = ComputeScreenPos(positionInputs.positionCS);
+#endif                
                 return OUT;
             }
+            
 
-            float4 frag(Varings IN):SV_Target
-            {
+            half4 frag(Varings IN):SV_Target
+            {   
+#ifdef _IS_RimLight_ON                   
+                float3 nVS = normalize(IN.normalVS);
+                float d = SampleSceneDepth(IN.scrPos.xy/IN.scrPos.w + nVS.xy * 5 * _RimLightWidth / _ScreenParams.xy);
+                d = CorrectDepth(d);
+#endif                
+           
                 UNITY_SETUP_INSTANCE_ID(IN);
                 half4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
                 //half3 ddx_positionWS = ddx(IN.positionWS);
                 //half3 ddy_positionWS = ddy(IN.positionWS);
-                
-                //float4 SHADOW_COORDS = TransformWorldToShadowCoord(IN.positionWS);
-                //Light light = GetMainLight(SHADOW_COORDS);
+#ifdef _IS_OPEN_SHADOW_ON                 
+                float4 SHADOW_COORDS = TransformWorldToShadowCoord(IN.positionWS);
+                Light light = GetMainLight(SHADOW_COORDS);
+#else
                 Light light = GetMainLight();
+#endif                
                 half3 n = normalize(IN.normalWS);
                 //half3 n = normalize(-cross(ddx_positionWS ,ddy_positionWS));
                 half3 v = normalize(IN.viewDirWS);
@@ -117,13 +151,15 @@ Shader "Unlit/VertAnimCharacter"
                 
                 half nl = max(0.0,dot(light.direction ,n));
                 half nh = max(0.0,dot(h ,n));
-                
-                //half atten = step(0.5, light.shadowAttenuation);
+#ifdef _IS_OPEN_SHADOW_ON                  
+                half atten = step(0.5, light.shadowAttenuation);
+#else
                 half atten = 1.0;
+#endif  
                 half3 diffuse = lerp(0.2 ,1,atten) * lerp(0.2*baseMap.xyz ,baseMap.xyz ,nl);
                 half3 specular = _IsSpecular * atten * light.color * step(0.9,pow(nh ,8));
                 
-                
+#ifdef _IS_ADDLIGHTS_ON                
                 uint pixelLightCount = GetAdditionalLightsCount();
                 for (uint lightIndex = 0; lightIndex < pixelLightCount; ++lightIndex)
                 {
@@ -136,9 +172,20 @@ Shader "Unlit/VertAnimCharacter"
                     diffuse += baseMap.xyz * add_nl* add_light.color * add_light.distanceAttenuation;
                     specular += _IsSpecular * add_light.color * add_light.distanceAttenuation * step(0.9,pow(add_nh ,8));
                 }
-                half3 color=diffuse*_BaseColor.xyz;
-                           
-                return half4(color ,1.0);
+#endif
+                half3 color = diffuse*_BaseColor.xyz;
+#ifdef _IS_RimLight_ON                 
+    #if UNITY_REVERSED_Z
+                    float aa = saturate(d - CorrectDepth(IN.scrPos.z/IN.scrPos.w));  
+    #else
+                    float aa = saturate(d - CorrectDepth(IN.scrPos.z/IN.scrPos.w));  
+    #endif
+                half4 final = lerp( half4(color ,1.0) ,half4(1,0,0,1) ,aa );
+#else
+                half4 final = half4(color ,1.0);     
+#endif
+                
+                return final;
             }
             ENDHLSL  //ENDCG          
         }
@@ -152,6 +199,7 @@ Shader "Unlit/VertAnimCharacter"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_instancing
+			#pragma multi_compile _IS_OPEN_SHADOW_ON
  
 			struct Attributes
 			{

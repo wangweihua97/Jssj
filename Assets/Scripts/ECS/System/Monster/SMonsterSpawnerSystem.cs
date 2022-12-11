@@ -29,15 +29,45 @@ namespace Game.ECS
         protected override void OnUpdate()
         {
             var commandBuffer = m_MonsterCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
-            
+            int2 mapSize = Setting.MapSize;
             Entities
-                .ForEach((Entity entity, int entityInQueryIndex, in CMonsterState cMonsterState ,in CMonsterInfo cMonsterInfo) =>
+                .ForEach((Entity entity, int entityInQueryIndex,in CPosition cp,in CMonsterState cMonsterState ,in CMonsterInfo cMonsterInfo) =>
                 {
                     if(cMonsterState.CurState == 2 && cMonsterState.curDeathTime > cMonsterInfo.maxDeathTime)
                         commandBuffer.DestroyEntity(entityInQueryIndex ,entity);
                 }).ScheduleParallel();
             m_MonsterCommandBufferSystem.AddJobHandleForProducer(Dependency);
+            Dependency.Complete();
         }
+
+        public void Creat_A_Large_Number_Monsters()
+        {
+            for (int i = 0; i < 10000; i++)
+            {
+                while (!RandomPosCreatMonster())
+                {
+                    
+                }
+            }
+        }
+
+        bool RandomPosCreatMonster()
+        {
+            int2 random_pos = new int2(UnityEngine.Random.Range(0,Setting.MapSize.x),
+                Random.Range(0,Setting.MapSize.y));
+
+            if (Mathf.Abs(random_pos.x - Setting.MapSize.x) < 40 || Mathf.Abs(random_pos.y - Setting.MapSize.y) < 40)
+                return false;
+            if (SPhysicsJob2System.MapBlock[random_pos.y * Setting.MapSize.x + random_pos.x].canWalk
+                && !MapService.FlowFieldMap.map[random_pos.y * Setting.MapSize.x + random_pos.x].Dir.Equals(half2.zero))
+            {
+                CreatMonster(random_pos);
+                return true;
+            }
+
+            return false;
+        }
+        
 
         public void CreatMonster(int2 xy)
         {
@@ -55,15 +85,25 @@ namespace Game.ECS
             var instance = EntityManager.CreateEntity();
             var position = new float2(xy.x + 0.5f ,xy.y+ 0.5f);
             MonsterId++;
-            EntityManager.AddComponentData(instance, new CPosition() { position =  position ,id = MonsterId ,radius = 0.4f});
+            EntityManager.AddComponentData(instance, new CPosition() { position =  position ,id = MonsterId ,radius = 0.25f});
             EntityManager.AddComponentData(instance, new CRotation() { rotation =  0.0f});
             EntityManager.AddComponentData(instance, new CMove() { i_m =  2.0f,v = float2.zero ,f = float2.zero ,last_f = float2.zero});
-            EntityManager.AddComponentData(instance, new CMonsterState() { CurState =  0,MonsterType = 0 ,curHP = 100});
             float random_play_time = Random.Range(0.0f, 1.0f);
+            EntityManager.AddComponentData(instance, new CMonsterState()
+            {
+                CurState =  0,MonsterType = 0 ,curHP = 1000 ,curAtkTime = random_play_time,
+                isAfterAtk = false ,isInAtkCD = false
+            });
             EntityManager.AddComponentData(instance, new CMonsterAnim() { cur_playTime = random_play_time});
-            EntityManager.AddComponentData(instance, new CMonsterInfo() { maxHP = 100 ,maxDeathTime = 1.0f});
+            EntityManager.AddComponentData(instance, new CMonsterInfo()
+            {
+                maxHP = 1000 ,maxDeathTime = 1.0f ,atkDamage = 30 ,atkInterval = 2.0f ,atkRange = 0.5f,
+                maxBeforeAtkTime = 1.0f,
+            });
+            EntityManager.AddComponentData(instance, new CHpPlane() { max_show_time = 1.0f ,cur_show_time = 1.0f,percent = 1.0f});
             
-            Insert(xy ,MonsterId ,new float2(xy.x + 0.5f ,xy.y+ 0.5f), 0.5f);
+            
+            //Insert(xy ,MonsterId ,new float2(xy.x + 0.5f ,xy.y+ 0.5f), 0.5f);
         }
         
         void Insert(int2 xy,uint id, float2 pos, float radius)

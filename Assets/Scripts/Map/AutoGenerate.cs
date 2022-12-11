@@ -96,10 +96,10 @@ namespace Game.Map
             GenerateSingleObstacles(fieldMap, changed_cellType, maxObstacleCount, random_obstacle, 0,
                 (ObstacleType) r_ObstacleType);
 
-            if (!fieldMap.CanConnectMonsterEntrance())
+            /*if (!fieldMap.CanConnectMonsterEntrance())
             {
                 UndoGenerateSingleObstacles(fieldMap, changed_cellType);
-            }
+            }*/
             changed_cellType.Clear();
         }
 

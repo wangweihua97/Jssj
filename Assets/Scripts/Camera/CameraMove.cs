@@ -22,7 +22,7 @@ namespace Game.Camera
 
         void Update()
         {
-            if (Input.touchCount <= 0)
+            if (Input.touchCount <= 0 || GMView.IsBuilding)
             {
                 return;
             }

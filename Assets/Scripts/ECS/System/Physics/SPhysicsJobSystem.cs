@@ -194,7 +194,8 @@ namespace Game.ECS
                     entitieInfo.f = cm.f;
                     entitieInfo.last_f = cm.last_f;
                     entitieInfo.i_m = cm.i_m;
-                    entitieInfo.isAlive = true;
+                    entitieInfo.isAlive = false;
+                    entitieInfo.isAtk = false;
                     int2 xy = new int2((int)cp.position.x ,(int)cp.position.y);
                     es[xy.y * xCount + xy.x].Add(entitieInfo);
                 })

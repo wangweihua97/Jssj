@@ -31,11 +31,13 @@ namespace Game.ECS
                         commandBuffer.DestroyEntity(entityInQueryIndex ,entity);
                 }).ScheduleParallel();
             m_rayBeginInitializationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
-            var createCommandBuffer = m_rayBeginInitializationEntityCommandBufferSystem.CreateCommandBuffer();
+            //var createCommandBuffer = m_rayBeginInitializationEntityCommandBufferSystem.CreateCommandBuffer();
             for (int i = 0; i < STowerAttackSystem.TowarAttackResultsCount; i++)
             {
-                var instance = createCommandBuffer.Instantiate(BulletEntity.Prefab);
-                createCommandBuffer.SetComponent(instance, new CAttackRay()
+                //var instance = createCommandBuffer.Instantiate(BulletEntity.Prefab);
+                var instance = EntityManager.CreateEntity();
+                //createCommandBuffer.AddComponent(instance, new CAttackRay()
+                EntityManager.AddComponentData(instance, new CAttackRay()
                 {
                     bulletType = STowerAttackSystem.TowarAttackResults[i].bulletType,
                     pos = STowerAttackSystem.TowarAttackResults[i].pos,
@@ -43,11 +45,12 @@ namespace Game.ECS
                     speed = STowerAttackSystem.TowarAttackResults[i].speed,
                     length = STowerAttackSystem.TowarAttackResults[i].length,
                     damage = STowerAttackSystem.TowarAttackResults[i].damage,
+                    rotation = STowerAttackSystem.TowarAttackResults[i].rotation,
                     monsterIndex = -1
                 });
             }
             STowerAttackSystem.TowarAttackResultsCount = 0;
-            m_rayBeginInitializationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
+            //m_rayBeginInitializationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
         }
         
     }

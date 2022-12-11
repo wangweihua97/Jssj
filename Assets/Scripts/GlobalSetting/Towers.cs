@@ -7,11 +7,19 @@ namespace Game.GlobalSetting
     {
         public static Towers Instance;
         public List<GameObject> TowersGo;
+        public List<GameObject> TowersBaseGo;
+        
         public List<Material> TowersMaterial;
+        
         [HideInInspector]
         public List<Mesh> TowersMesh;
         [HideInInspector]
         public List<Matrix4x4> TowersSelfMat;
+        
+        [HideInInspector]
+        public List<Mesh> TowersBaseMesh;
+        [HideInInspector]
+        public List<Matrix4x4> TowersBaseSelfMat;
         
 
         private void Awake()
@@ -25,6 +33,15 @@ namespace Game.GlobalSetting
                 Mesh mesh = tree.GetComponent<MeshFilter>().sharedMesh;
                 TowersMesh.Add(CombineSubMesh(tree ,mesh));
                 TowersSelfMat.Add(GetSelfMat(tree.transform));
+            }
+            
+            TowersBaseMesh = new List<Mesh>();
+            TowersBaseSelfMat = new List<Matrix4x4>();
+            foreach (var tree in TowersBaseGo)
+            {
+                Mesh mesh = tree.GetComponent<MeshFilter>().sharedMesh;
+                TowersBaseMesh.Add(CombineSubMesh(tree ,mesh));
+                TowersBaseSelfMat.Add(GetSelfMat(tree.transform));
             }
         }
         
@@ -44,7 +61,7 @@ namespace Game.GlobalSetting
 
         Matrix4x4 GetSelfMat(Transform tf)
         {
-            return Matrix4x4.Rotate(tf.localRotation) * Matrix4x4.Scale(tf.localScale);
+            return Matrix4x4.Translate(tf.localPosition) * Matrix4x4.Rotate(tf.localRotation) * Matrix4x4.Scale(tf.localScale);
         }
     }
 }

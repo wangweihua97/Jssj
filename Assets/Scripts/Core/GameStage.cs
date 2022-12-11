@@ -13,6 +13,7 @@ namespace Core
 
         private void Awake()
         {
+
             GameContext = new Context();
             GameContext.AddService<MapService>();
             

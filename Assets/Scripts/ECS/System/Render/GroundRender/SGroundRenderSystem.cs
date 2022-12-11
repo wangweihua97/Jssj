@@ -112,6 +112,7 @@ namespace Game.ECS
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            planWorldMat.Dispose();
         }
     }
 }

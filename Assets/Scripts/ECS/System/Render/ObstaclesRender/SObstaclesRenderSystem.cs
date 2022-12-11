@@ -121,6 +121,8 @@ namespace Game.ECS
                 {
                     for (int i = startPos.x; i < startPos.x + xyCount.x; i++)
                     {
+                        if(i < 0 || i >= xSize || j < 0 || j> ySize)
+                            continue;
                         MapObstacleInfo obstacleInfo = mapObstacleInfos[j * xSize + i];
                         int obstacleType = obstacleInfo.obstacleIndex;
                         if( obstacleType < 0)
@@ -173,7 +175,7 @@ namespace Game.ECS
                     int cur_count = count > 1000 ? 1000 : count;
                     NativeArray<Matrix4x4>.Copy(obstaclesWorldMat, i * OBSTACLE_MAX_SHOW_AMOUNT + start,temp_mat,0, cur_count);
                     MaterialPropertyBlock properties = new MaterialPropertyBlock();
-                    Graphics.DrawMeshInstanced(obstaclesMesh[i] ,0,obstaclesMat[i],temp_mat,cur_count,properties,ShadowCastingMode.Off);
+                    Graphics.DrawMeshInstanced(obstaclesMesh[i] ,0,obstaclesMat[i],temp_mat,cur_count,properties,Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off);
                     start += 1000;
                     count -= 1000;
                 }
@@ -190,6 +192,10 @@ namespace Game.ECS
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            obstaclesWorldMat.Dispose();
+            obstaclesCount.Dispose();
+            obstaclesSelfMat.Dispose();
+            mapObstacleInfos.Dispose();
         }
     }
 }

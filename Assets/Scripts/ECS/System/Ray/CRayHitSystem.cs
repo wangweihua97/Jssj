@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 namespace Game.ECS
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateBefore(typeof(SPhysicsJob2System))]
+    [UpdateAfter(typeof(SPhysicsJob2System))]
     public partial class CRayHitSystem  : SystemBase ,ICustomSystem
     {
         EntityQuery m_Group;
@@ -51,7 +51,7 @@ namespace Game.ECS
             }
         }
         
-        [BurstCompile]
+        //[BurstCompile]
         public partial struct HitJob : IJobEntity
         {
             public int2 mapSize;
@@ -140,7 +140,7 @@ namespace Game.ECS
                     while (y_start < y_step_len)
                     {
                         
-                        int2 curXY = new int2((int)start.x + y_start * y_dir,(int)x);
+                        int2 curXY = new int2((int)x ,(int)start.y + y_start * y_dir);
                         if (Check(curXY, rayCenter, rayCenterWH, start, end, rayLength,
                             out float rayHitLength ,out int rayHitMonsterIndex))
                         {
@@ -202,9 +202,9 @@ namespace Game.ECS
                     if (RayHitCircular(rayCenter ,rayCenterWH ,rayStart ,rayDir ,rayLength ,entitieInfo.position,entitieInfo.radius ,out float curHitLen))
                     {
                         ifHit = true;
-                        index = entitieInfo.index;
                         if (curHitLen < rayHitLength)
                         {
+                            index = entitieInfo.index;
                             rayHitLength = curHitLen;
                         }
                     }
@@ -228,7 +228,7 @@ namespace Game.ECS
                 float t = 0.5f * (-b - d);
                 if(t < 0)
                     t = 0.5f * (-b + d);
-                if (t < 0 || t < rayLength)
+                if (t < 0 || t > rayLength)
                     return false;
                 rayHitLength = t;
                 return true;
@@ -241,7 +241,6 @@ namespace Game.ECS
                 return collisionX && collisionY;
             } 
         }
-
         protected override void OnUpdate()
         {
             NativeArray<MonsterBeHit> monsterBeHits = MonsterBeHits;
@@ -266,7 +265,8 @@ namespace Game.ECS
             m_hitJob.mapBlock = mapBlock;
             m_hitJob.mapNodeEs = mapNodeEs;
             m_hitJob.zCount = zCount;
-            Dependency = m_hitJob.ScheduleParallel(m_RayGroup, Dependency);
+            //Dependency = m_hitJob.ScheduleParallel(m_RayGroup, Dependency);
+            Dependency = m_hitJob.Schedule(m_RayGroup, Dependency);
             Dependency.Complete();
 
             Entities
@@ -291,6 +291,7 @@ namespace Game.ECS
 
         public void OnDestroy(ref SystemState state)
         {
+            MonsterBeHits.Dispose();
         }
     }
 }

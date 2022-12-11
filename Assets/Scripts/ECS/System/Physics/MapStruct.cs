@@ -20,11 +20,12 @@ namespace Game.ECS
     }
     
     [BurstCompile]
-    public struct MapNodeDir
+    public struct MapNodeInfo
     {
         public float2 dir;
         public bool canWalk;
         public bool isTowar;
+        public float damage;
     }
 
     [BurstCompile]
@@ -40,5 +41,6 @@ namespace Game.ECS
         public float2 last_f;
         public float i_m;
         public bool isAlive;
+        public bool isAtk;
     }
 }

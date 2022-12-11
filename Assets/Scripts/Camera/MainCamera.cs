@@ -2,6 +2,8 @@
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Game.Camera
 {
@@ -9,6 +11,7 @@ namespace Game.Camera
     public class MainCamera : MonoBehaviour
     {
         public static MainCamera Instance;
+        public UniversalAdditionalCameraData CameraData;
         public float Width;
         public float Height;
         public UnityEngine.Camera Camera;
@@ -34,12 +37,18 @@ namespace Game.Camera
         private Vector3 m_last_angle;
         private float m_last_height;
         private float m_last_posY;
+        private RenderTexture[] m_rts;
         private void Awake()
         {
             Instance = this;
             Camera = GetComponent<UnityEngine.Camera>();
-            
+            CameraData = GetComponent<UniversalAdditionalCameraData>();
             ChangeSize();
+        }
+
+        private void Start()
+        {
+            ;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

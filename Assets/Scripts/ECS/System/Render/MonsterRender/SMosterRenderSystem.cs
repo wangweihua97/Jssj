@@ -195,6 +195,11 @@ namespace Game.ECS
                         playTime = math.fmod(cma.cur_playTime + deltaTime* monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.run_anim_time);
                         tempAnimInfo.cur_play_time = monsterAnimInfo.run_anim_pos+playTime; 
                     }
+                    else if (cms.CurState == 1)
+                    {
+                        playTime = math.min(cma.cur_playTime + deltaTime* monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.atk_anim_time);
+                        tempAnimInfo.cur_play_time = monsterAnimInfo.atk_anim_pos+playTime; 
+                    }
                     else
                     {
                         playTime = math.min(cma.cur_playTime + deltaTime* monsterAnimInfo.i_vat_size * VAT_FRAMERATE,monsterAnimInfo.death_anim_time);
@@ -216,6 +221,7 @@ namespace Game.ECS
 
                 })
                 .Schedule();
+
             Dependency.Complete();
             
             calculateMatAndPlayTimeJob.Mats = mats;
@@ -250,7 +256,8 @@ namespace Game.ECS
                     Array.Copy(max_ma, start, temp_ma, 0, cur_count);
                     MaterialPropertyBlock properties = new MaterialPropertyBlock();
                     properties.SetFloatArray(ShaderPlayPosId ,temp_as);
-                    Graphics.DrawMeshInstanced(monsters.allMeshs[i] ,0,monsters.allMats[i],temp_ma,cur_count,properties,ShadowCastingMode.Off);
+                    Graphics.DrawMeshInstanced(monsters.allMeshs[i] ,0,monsters.allMats[i],temp_ma,cur_count,properties,
+                        Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off ,Setting.IsOpenShadow , 0 ,UnityEngine.Camera.main);
 
                     start += 1000;
                     count -= 1000;
@@ -276,6 +283,11 @@ namespace Game.ECS
         
         public void OnDestroy(ref SystemState state)
         {
+            MonsterAnimInfos.Dispose();
+            MonsterCount.Dispose();
+            AnimPlayPoses.Dispose();
+            Mats.Dispose();
+            TempAnimInfos.Dispose();
         }
         
         

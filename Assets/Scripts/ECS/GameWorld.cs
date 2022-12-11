@@ -68,17 +68,8 @@ namespace Game.ECS
         {
             SMonsterSpawnerSystem monsterSpawnerSystem =
                 World.DefaultGameObjectInjectionWorld.GetExistingSystem<SMonsterSpawnerSystem>();
-
-            await Task.Delay(100);
-            for (int i = 0; i < 10000; i++)
-            {
-                int2 random_pos = new int2(UnityEngine.Random.Range(0,Setting.MapSize.x),
-                    Random.Range(0,Setting.MapSize.y));
-                if (SPhysicsJob2System.MapBlock[random_pos.y * Setting.MapSize.x + random_pos.x].canWalk)
-                {
-                    monsterSpawnerSystem.CreatMonster(random_pos);
-                }
-            }
+            
+            monsterSpawnerSystem.Creat_A_Large_Number_Monsters();
         }
     }
 }

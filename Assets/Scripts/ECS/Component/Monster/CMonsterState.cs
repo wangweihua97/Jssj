@@ -1,4 +1,5 @@
 ﻿using Unity.Entities;
+using Unity.Mathematics;
 
 namespace Game.ECS
 {
@@ -10,6 +11,10 @@ namespace Game.ECS
         public float curHP;
         public float curAtkTime;
         public float curDeathTime;
-        
+
+        public float curAtkIdleTime;
+        public int2 atkPos;
+        public bool isAfterAtk;
+        public bool isInAtkCD;
     }
 }

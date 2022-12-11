@@ -18,11 +18,14 @@ namespace Game.ECS
         private const int TOWERS_AMOUNT = (int)TowerCount.Default;
         
         private Mesh[] towersMesh;
+        private Mesh[] towersBaseMesh;
         private Material[] towersMat;
 
         private NativeArray<Matrix4x4> towersWorldMat;
+        private NativeArray<Matrix4x4> towersBaseWorldMat;
         private NativeArray<int> towersCount;
         private NativeArray<Matrix4x4> towersSelfMat;
+        private NativeArray<Matrix4x4> towersBaseSelfMat;
         
         private Matrix4x4[] temp_mat;
         private int2 mapSize;
@@ -46,61 +49,28 @@ namespace Game.ECS
             Towers towers = Towers.Instance;
             int totalObstaclesAmount = TOWERS_AMOUNT;
             towersMesh = new Mesh[totalObstaclesAmount];
+            towersBaseMesh = new Mesh[totalObstaclesAmount];
             towersMat = new Material[totalObstaclesAmount];
             towersSelfMat = new NativeArray<Matrix4x4>(totalObstaclesAmount ,Allocator.Persistent);
+            towersBaseSelfMat = new NativeArray<Matrix4x4>(totalObstaclesAmount ,Allocator.Persistent);
             for (int i = 0; i < TOWERS_AMOUNT; i++)
             {
                 towersMesh[i] = towers.TowersMesh[i];
+                towersBaseMesh[i] = towers.TowersBaseMesh[i];
                 towersMat[i] = towers.TowersMaterial[i];
                 towersSelfMat[i] = towers.TowersSelfMat[i];
+                towersBaseSelfMat[i] = towers.TowersBaseSelfMat[i];
             }
             
             towersCount = new NativeArray<int>(totalObstaclesAmount ,Allocator.Persistent);
             towersWorldMat = new NativeArray<Matrix4x4>(totalObstaclesAmount *TOWERS_MAX_SHOW_AMOUNT , Allocator.Persistent);
+            towersBaseWorldMat = new NativeArray<Matrix4x4>(totalObstaclesAmount *TOWERS_MAX_SHOW_AMOUNT , Allocator.Persistent);
             temp_mat = new Matrix4x4[1000];
         }
 
         void InitmapTowerInfos()
         {
             int2 mapSize =  Setting.MapSize;
-        }
-        
-        [BurstCompile]
-        public struct TowersWorldMatJob: IJob
-        {
-            public int2 startPos;
-            public int2 xyCount;
-            public int xSize;
-            public int ySize;
-            [ReadOnly] 
-            public NativeArray<MapTowerInfo> mapTowerInfos;
-            [ReadOnly]
-            public NativeArray<Matrix4x4> obstaclesSelfMat;
-            [WriteOnly]
-            public NativeArray<Matrix4x4> towersWorldMat;
-
-            public NativeArray<int> towersCount;
-            public void Execute()
-            {
-                for (int j = startPos.y; j < startPos.y + xyCount.y; j++)
-                {
-                    for (int i = startPos.x; i < startPos.x + xyCount.x; i++)
-                    {
-                        MapTowerInfo obstacleInfo = mapTowerInfos[j * xSize + i];
-                        int towerType = obstacleInfo.TowerIndex;
-                        if( towerType < 0)
-                            continue;
-                        int count = towersCount[towerType];
-                        if( count >= TOWERS_MAX_SHOW_AMOUNT)
-                            continue;
-                        
-                        towersWorldMat[towerType * TOWERS_MAX_SHOW_AMOUNT + count] = Matrix4x4.Translate(new Vector3(i + 0.5f, 0, j + 0.5f)) *
-                                                                                     obstaclesSelfMat[towerType];
-                        towersCount[towerType] = count + 1;
-                    }
-                }
-                
-            }
         }
 
         protected override void OnUpdate()
@@ -117,6 +87,10 @@ namespace Game.ECS
             
             NativeArray<Matrix4x4> towersSelfMat = this.towersSelfMat;
             NativeArray<Matrix4x4> towersWorldMat = this.towersWorldMat;
+            
+            NativeArray<Matrix4x4> towersBaseSelfMat = this.towersBaseSelfMat;
+            NativeArray<Matrix4x4> towersBaseWorldMat = this.towersBaseWorldMat;
+            
             NativeArray<int> towersCount = this.towersCount;
             Entities
                 .WithStoreEntityQueryInField(ref m_Group)
@@ -129,8 +103,10 @@ namespace Game.ECS
                     if( count >= TOWERS_MAX_SHOW_AMOUNT)
                         return;
                     towersWorldMat[cTowerInfo.type * TOWERS_MAX_SHOW_AMOUNT + count] = Matrix4x4.Translate(new Vector3(xy.x + 0.5f, 0, xy.y + 0.5f))
-                                                                                       *Matrix4x4.Rotate(Quaternion.Euler(0, cTowerTransform.rotation,0)) * 
+                                                                                       *Matrix4x4.Rotate(Quaternion.Euler(0, cTowerTransform.rotation + 90,0)) * 
                                                                                        towersSelfMat[cTowerInfo.type];
+                    towersBaseWorldMat[cTowerInfo.type * TOWERS_MAX_SHOW_AMOUNT + count] = Matrix4x4.Translate(new Vector3(xy.x + 0.5f, 0, xy.y + 0.5f)) * 
+                                                                                           towersBaseSelfMat[cTowerInfo.type];
                     towersCount[cTowerInfo.type] = count + 1;
                     
                 }).Schedule();
@@ -146,7 +122,11 @@ namespace Game.ECS
                     int cur_count = count > 1000 ? 1000 : count;
                     NativeArray<Matrix4x4>.Copy(towersWorldMat, i * TOWERS_MAX_SHOW_AMOUNT + start,temp_mat,0, cur_count);
                     MaterialPropertyBlock properties = new MaterialPropertyBlock();
-                    Graphics.DrawMeshInstanced(towersMesh[i] ,0,towersMat[i],temp_mat,cur_count,properties,ShadowCastingMode.Off);
+                    Graphics.DrawMeshInstanced(towersMesh[i] ,0,towersMat[i],temp_mat,cur_count,properties,Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off);
+                    
+                    NativeArray<Matrix4x4>.Copy(towersBaseWorldMat, i * TOWERS_MAX_SHOW_AMOUNT + start,temp_mat,0, cur_count);
+                    MaterialPropertyBlock baseProperties = new MaterialPropertyBlock();
+                    Graphics.DrawMeshInstanced(towersBaseMesh[i] ,0,towersMat[i],temp_mat,cur_count,baseProperties,Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off );
                     start += 1000;
                     count -= 1000;
                 }
@@ -163,6 +143,11 @@ namespace Game.ECS
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            towersWorldMat.Dispose();
+            towersBaseWorldMat.Dispose();
+            towersCount.Dispose();
+            towersSelfMat.Dispose();
+            towersBaseSelfMat.Dispose();
         }
     }
 }

@@ -14,8 +14,8 @@ namespace Game.ECS
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     public partial class SPhysicsJob2System : SystemBase ,ICustomSystem
     {
-        EntityQuery m_Group;
-        const float SpringForce = 100.0f;
+        public static EntityQuery m_Group;
+        const float SpringForce = 120.0f;
         public const int MapNodeMaxContainEntitieCount = 16;
         public static NativeArray<EntitieInfo> MapNodeEs;
         public static NativeArray<MapNode2Struct> MapBlock;
@@ -34,7 +34,9 @@ namespace Game.ECS
             m_Group = GetEntityQuery(ComponentType.ReadOnly<CRotation>(),
                 ComponentType.ReadOnly<CPosition>(),
                 ComponentType.ReadOnly<CMove>(),
-                ComponentType.ReadOnly<CMonsterState>()
+                ComponentType.ReadOnly<CMonsterState>(),
+                ComponentType.ReadOnly<CMonsterAnim>(),
+                ComponentType.ReadOnly<CMonsterInfo>() 
                 );
         }
 
@@ -81,8 +83,9 @@ namespace Game.ECS
             public void Execute(int i)
             {
                 EntitieInfo source = es[i];
-                if (source.isAlive == false)
+                if (source.isAlive == false || source.isAtk)
                 {
+                    result[i] = source;
                     return;
                 }
                 int2 curXy = new int2((int)source.position.x ,(int)source.position.y);
@@ -238,13 +241,14 @@ namespace Game.ECS
         {
             public int xCount;
             public int zCount;
+            public int dataCount;
             [ReadOnly]
             public NativeArray<EntitieInfo> es;
             public NativeArray<MapNode2Struct> MapBlock;
             public NativeArray<EntitieInfo> MapNodeEs;
             public void Execute()
             {
-                for (int index = 0; index < es.Length; index++)
+                for (int index = 0; index < dataCount; index++)
                 {
                     EntitieInfo entitieInfo = es[index];
                     int2 xy = new int2((int)entitieInfo.position.x ,(int)entitieInfo.position.y);
@@ -285,18 +289,17 @@ namespace Game.ECS
             if (dataCount > this.m_es.Length)
             {
                 ResizeCapacity(dataCount);
-            }
+            };
 
             NativeArray<EntitieInfo> es = this.m_es;
             NativeArray<EntitieInfo> result= this.m_result;
             mapClearJob.MapBlock = MapBlock;
             JobHandle mapClearHandle = mapClearJob.Schedule(xCount * yCount, 1);  
             mapClearHandle.Complete();
-            
-            
             Entities
                 .WithStoreEntityQueryInField(ref m_Group)
-                .ForEach((int entityInQueryIndex, in CRotation cr ,in CPosition cp , in CMove cm ,in CMonsterState cMonsterState) =>
+                .ForEach((int entityInQueryIndex, in CRotation cr, in CPosition cp, in CMove cm,
+                    in CMonsterState cMonsterState, in CMonsterAnim cma, in CMonsterInfo cMonsterInfo) =>
                 {
                     EntitieInfo entitieInfo;
                     entitieInfo.index = entityInQueryIndex;
@@ -308,7 +311,8 @@ namespace Game.ECS
                     entitieInfo.f = cm.f;
                     entitieInfo.last_f = cm.last_f;
                     entitieInfo.i_m = cm.i_m;
-                    entitieInfo.isAlive = cMonsterState.CurState != 2;
+                    entitieInfo.isAlive = cMonsterState.CurState < 2;
+                    entitieInfo.isAtk = cMonsterState.CurState == 1;
                     es[entityInQueryIndex] = entitieInfo;
 
                 })
@@ -318,6 +322,7 @@ namespace Game.ECS
             updateMapJob.es = es;
             updateMapJob.xCount = xCount;
             updateMapJob.zCount = zCount;
+            updateMapJob.dataCount = dataCount;
             updateMapJob.MapNodeEs = MapNodeEs;
             updateMapJob.MapBlock = MapBlock;
             
@@ -337,37 +342,20 @@ namespace Game.ECS
             JobHandle handle = jobData.Schedule(dataCount, 1);  
             //等待作业的完成
             handle.Complete();
-
-            NativeArray<MonsterBeHit> monsterBeHits = CRayHitSystem.MonsterBeHits;
             
             Entities
                 .WithName("UpdatePosition")
                 .WithBurst()
-                .ForEach((int entityInQueryIndex,ref CPosition cPosition, ref CRotation cRotation ,ref CMove move ,ref CMonsterState cMonsterState ,ref CMonsterAnim cMonsterAnim) =>
+                .ForEach((int entityInQueryIndex,ref CPosition cPosition, ref CRotation cRotation ,ref CMove move
+                    ) =>
                 {
-                    if (cMonsterState.CurState == 2)
-                    {
-                        cMonsterState.curDeathTime += deltaTime;
-                        return;
-                    }
                     EntitieInfo entitieInfo = result[entityInQueryIndex];
-                    MonsterBeHit monsterBeHit = monsterBeHits[entityInQueryIndex];
                     move.v = entitieInfo.v;
                     move.f = entitieInfo.f;
                     cPosition.position = entitieInfo.position;
                     
-                    if (monsterBeHit.damage > 0.01f)
-                    {
-                        cMonsterState.curHP -= monsterBeHit.damage;
-                        if (cMonsterState.curHP < 0)
-                        {
-                            cMonsterState.CurState = 2;
-                            cMonsterState.curDeathTime = 0.0f;
-                            cMonsterAnim.cur_playTime = 0;
-                        }
-                    }
-                    
-                }).ScheduleParallel();
+                }).
+                ScheduleParallel();
             
             Dependency.Complete();
         }
@@ -381,6 +369,10 @@ namespace Game.ECS
         }
         public void OnDestroy(ref SystemState state)
         {
+            MapNodeEs.Dispose();
+            MapBlock.Dispose();
+            m_es.Dispose();
+            m_result.Dispose();
         }
     }
 }
