@@ -142,8 +142,8 @@
      <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
-     <None Include="Assets\Meshs\Zombie\zombie\anim_info.txt" />
-     <None Include="Assets\StreamingAssets\UnityServicesProjectConfiguration.json" />
+     <None Include="Assets\Meshs\Zombie\zombie\lod2\anim_info.txt" />
+     <None Include="Assets\Meshs\Zombie\zombie\lod0\anim_info.txt" />
      <None Include="Assets\Shaders\Common\Common.hlsl" />
      <None Include="Assets\Shaders\Plane\PlaneDefault.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
@@ -154,6 +154,7 @@
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
      <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
+     <None Include="Assets\Meshs\Zombie\zombie\lod1\anim_info.txt" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
      <None Include="Assets\Shaders\Model\VertAnimCharacter.shader" />
      <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />

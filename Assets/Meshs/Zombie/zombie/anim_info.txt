@@ -1,1 +1,0 @@
-{"size": 512, "info": {"Armature|ATK|Baked frames": [0, 125], "Armature|DEAD|Baked frames": [125, 49], "Armature|RUN|Baked frames": [174, 49]}}
