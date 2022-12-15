@@ -11,6 +11,7 @@ namespace Game.Camera
     public class MainCamera : MonoBehaviour
     {
         public static MainCamera Instance;
+        public float2 Lod;
         public UniversalAdditionalCameraData CameraData;
         public float Width;
         public float Height;
@@ -38,6 +39,8 @@ namespace Game.Camera
         private float m_last_height;
         private float m_last_posY;
         private RenderTexture[] m_rts;
+
+        public int CurLod;
         private void Awake()
         {
             Instance = this;
@@ -67,6 +70,17 @@ namespace Game.Camera
                 ChangeSize();
             }
             ChangeCenter();
+            SetLod();
+        }
+
+        void SetLod()
+        {
+            if (Height < Lod.x)
+                CurLod = 0;
+            else if(Height < Lod.y)
+                CurLod = 1;
+            else
+                CurLod = 2;
         }
 
         void ChangeSize()

@@ -18,12 +18,9 @@ namespace Game.ECS
         private const int TREE_AMOUNT = (int)ObstacleCount.Tree;
         private const int ROCK_AMOUNT = (int)ObstacleCount.Rock;
         
-        private Mesh[] obstaclesMesh;
-        private Material[] obstaclesMat;
 
         private NativeArray<Matrix4x4> obstaclesWorldMat;
         private NativeArray<int> obstaclesCount;
-        private NativeArray<Matrix4x4> obstaclesSelfMat;
         
         private Matrix4x4[] temp_mat;
 
@@ -48,22 +45,6 @@ namespace Game.ECS
         {
             Obstacles obstacles = Obstacles.Instance;
             int totalObstaclesAmount = TREE_AMOUNT + ROCK_AMOUNT;
-            obstaclesMesh = new Mesh[totalObstaclesAmount];
-            obstaclesMat = new Material[totalObstaclesAmount];
-            obstaclesSelfMat = new NativeArray<Matrix4x4>(totalObstaclesAmount ,Allocator.Persistent);
-            for (int i = 0; i < TREE_AMOUNT; i++)
-            {
-                obstaclesMesh[i] = obstacles.TreesMesh[i];
-                obstaclesMat[i] = obstacles.TreesMaterial[i];
-                obstaclesSelfMat[i] = obstacles.TreesSelfMat[i];
-            }
-            
-            for (int i = 0; i < ROCK_AMOUNT; i++)
-            {
-                obstaclesMesh[i + TREE_AMOUNT] = obstacles.RocksMesh[i];
-                obstaclesMat[i + TREE_AMOUNT] = obstacles.RocksMaterial[i];
-                obstaclesSelfMat[i + TREE_AMOUNT] = obstacles.RocksSelfMat[i];
-            }
             
             obstaclesCount = new NativeArray<int>(totalObstaclesAmount ,Allocator.Persistent);
             obstaclesWorldMat = new NativeArray<Matrix4x4>(totalObstaclesAmount *OBSTACLE_MAX_SHOW_AMOUNT , Allocator.Persistent);
@@ -109,8 +90,6 @@ namespace Game.ECS
             public int ySize;
             [ReadOnly] 
             public NativeArray<MapObstacleInfo> mapObstacleInfos;
-            [ReadOnly]
-            public NativeArray<Matrix4x4> obstaclesSelfMat;
             [WriteOnly]
             public NativeArray<Matrix4x4> ObstaclesWorldMat;
 
@@ -131,8 +110,7 @@ namespace Game.ECS
                         if( count >= OBSTACLE_MAX_SHOW_AMOUNT)
                             continue;
                         
-                        ObstaclesWorldMat[obstacleType * OBSTACLE_MAX_SHOW_AMOUNT + count] = Matrix4x4.Translate(new Vector3(i + 0.5f, 0, j + 0.5f)) *
-                                                                                             obstaclesSelfMat[obstacleType];
+                        ObstaclesWorldMat[obstacleType * OBSTACLE_MAX_SHOW_AMOUNT + count] = Matrix4x4.Translate(new Vector3(i + 0.5f, 0, j + 0.5f));
                         obstaclesCount[obstacleType] = count + 1;
                     }
                 }
@@ -159,13 +137,12 @@ namespace Game.ECS
             _matJob.ySize = mapSize.y;
             _matJob.obstaclesCount = obstaclesCount;
             _matJob.mapObstacleInfos = mapObstacleInfos;
-            _matJob.obstaclesSelfMat = obstaclesSelfMat;
             _matJob.ObstaclesWorldMat = obstaclesWorldMat;
             
             JobHandle jobHandle =_matJob.Schedule();
             jobHandle.Complete();
 
-            for (int i = 0; i < TREE_AMOUNT + ROCK_AMOUNT; i++)
+            for (int i = 0; i < TREE_AMOUNT; i++)
             {
                 int count = obstaclesCount[i];
             
@@ -175,7 +152,23 @@ namespace Game.ECS
                     int cur_count = count > 1000 ? 1000 : count;
                     NativeArray<Matrix4x4>.Copy(obstaclesWorldMat, i * OBSTACLE_MAX_SHOW_AMOUNT + start,temp_mat,0, cur_count);
                     MaterialPropertyBlock properties = new MaterialPropertyBlock();
-                    Graphics.DrawMeshInstanced(obstaclesMesh[i] ,0,obstaclesMat[i],temp_mat,cur_count,properties,Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off);
+                    Graphics.DrawMeshInstanced( Obstacles.Instance.Trees[i].GetMesh() ,0,Obstacles.Instance.Trees[i].GetMaterial(),temp_mat,cur_count,properties,Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off);
+                    start += 1000;
+                    count -= 1000;
+                }
+            }
+            
+            for (int i = TREE_AMOUNT; i < TREE_AMOUNT + ROCK_AMOUNT; i++)
+            {
+                int count = obstaclesCount[i];
+            
+                int start = 0;
+                while (count > 0)
+                {
+                    int cur_count = count > 1000 ? 1000 : count;
+                    NativeArray<Matrix4x4>.Copy(obstaclesWorldMat, i * OBSTACLE_MAX_SHOW_AMOUNT + start,temp_mat,0, cur_count);
+                    MaterialPropertyBlock properties = new MaterialPropertyBlock();
+                    Graphics.DrawMeshInstanced(Obstacles.Instance.Rocks[i - TREE_AMOUNT].GetMesh() ,0,Obstacles.Instance.Rocks[i - TREE_AMOUNT].GetMaterial(),temp_mat,cur_count,properties,Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off);
                     start += 1000;
                     count -= 1000;
                 }
@@ -194,7 +187,6 @@ namespace Game.ECS
             base.OnDestroy();
             obstaclesWorldMat.Dispose();
             obstaclesCount.Dispose();
-            obstaclesSelfMat.Dispose();
             mapObstacleInfos.Dispose();
         }
     }

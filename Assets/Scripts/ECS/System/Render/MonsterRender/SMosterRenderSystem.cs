@@ -79,7 +79,7 @@ namespace Game.ECS
                 
                 monsterAnimInfo.death_anim_pos = vatInfo.AnimInfos[vatInfo.DeathAnimIndex].x / vatInfo.VAT_Size;
                 monsterAnimInfo.death_anim_time = vatInfo.AnimInfos[vatInfo.DeathAnimIndex].y / vatInfo.VAT_Size;
-                monsterAnimInfo.self_mat = monsters.selfMats[i];
+                monsterAnimInfo.self_mat = monsters.allMonsters[i].Lod0Mat;
                 MonsterAnimInfos[i] = monsterAnimInfo;
             }
         }
@@ -256,7 +256,7 @@ namespace Game.ECS
                     Array.Copy(max_ma, start, temp_ma, 0, cur_count);
                     MaterialPropertyBlock properties = new MaterialPropertyBlock();
                     properties.SetFloatArray(ShaderPlayPosId ,temp_as);
-                    Graphics.DrawMeshInstanced(monsters.allMeshs[i] ,0,monsters.allMats[i],temp_ma,cur_count,properties,
+                    Graphics.DrawMeshInstanced(monsters.allMonsters[i].GetMesh() ,0,monsters.allMonsters[i].GetMaterial() ,temp_ma,cur_count,properties,
                         Setting.IsOpenShadow ?ShadowCastingMode.On : ShadowCastingMode.Off ,Setting.IsOpenShadow , 0 ,UnityEngine.Camera.main);
 
                     start += 1000;

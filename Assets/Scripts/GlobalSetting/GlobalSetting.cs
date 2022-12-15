@@ -58,42 +58,42 @@ namespace Game.GlobalSetting
         {
             if (isOPen)
             {
-                foreach (var mat in Monsters.Instance.allMats)
+                foreach (var gameObjectLod in Monsters.Instance.allMonsters)
                 {
-                    mat.EnableKeyword("_IS_OPEN_SHADOW_ON");
+                    gameObjectLod.EnableKey("_IS_OPEN_SHADOW_ON");
                 }
-                foreach (var mat in Obstacles.Instance.RocksMaterial)
+                foreach (var mat in Obstacles.Instance.Rocks)
                 {
-                    mat.EnableKeyword("_IS_OPEN_SHADOW_ON");
+                    mat.EnableKey("_IS_OPEN_SHADOW_ON");
                 }
-                foreach (var mat in Obstacles.Instance.TreesMaterial)
+                foreach (var mat in Obstacles.Instance.Trees)
                 {
-                    mat.EnableKeyword("_IS_OPEN_SHADOW_ON");
+                    mat.EnableKey("_IS_OPEN_SHADOW_ON");
                 }
                 Planes.Instance.PlanMaterial.EnableKeyword("_IS_OPEN_SHADOW_ON");
-                foreach (var mat in Towers.Instance.TowersMaterial)
+                foreach (var mat in Towers.Instance.TowersGo)
                 {
-                    mat.EnableKeyword("_IS_OPEN_SHADOW_ON");
+                    mat.EnableKey("_IS_OPEN_SHADOW_ON");
                 }
             }
             else
             {
-                foreach (var mat in Monsters.Instance.allMats)
+                foreach (var gameObjectLod in Monsters.Instance.allMonsters)
                 {
-                    mat.DisableKeyword("_IS_OPEN_SHADOW_ON");
+                    gameObjectLod.DisEnableKey("_IS_OPEN_SHADOW_ON");
                 }
-                foreach (var mat in Obstacles.Instance.RocksMaterial)
+                foreach (var mat in Obstacles.Instance.Rocks)
                 {
-                    mat.DisableKeyword("_IS_OPEN_SHADOW_ON");
+                    mat.DisEnableKey("_IS_OPEN_SHADOW_ON");
                 }
-                foreach (var mat in Obstacles.Instance.TreesMaterial)
+                foreach (var mat in Obstacles.Instance.Trees)
                 {
-                    mat.DisableKeyword("_IS_OPEN_SHADOW_ON");
+                    mat.DisEnableKey("_IS_OPEN_SHADOW_ON");
                 }
                 Planes.Instance.PlanMaterial.DisableKeyword("_IS_OPEN_SHADOW_ON");
-                foreach (var mat in Towers.Instance.TowersMaterial)
+                foreach (var mat in Towers.Instance.TowersGo)
                 {
-                    mat.DisableKeyword("_IS_OPEN_SHADOW_ON");
+                    mat.DisEnableKey("_IS_OPEN_SHADOW_ON");
                 }
             }
         }
@@ -103,40 +103,40 @@ namespace Game.GlobalSetting
         {
             if (isOPen)
             {
-                foreach (var mat in Monsters.Instance.allMats)
+                foreach (var gameObjectLod in Monsters.Instance.allMonsters)
                 {
-                    mat.EnableKeyword("_IS_RimLight_ON");
+                    gameObjectLod.EnableKey("_IS_RimLight_ON");
                 }
-                foreach (var mat in Obstacles.Instance.RocksMaterial)
+                foreach (var mat in Obstacles.Instance.Rocks)
                 {
-                    mat.EnableKeyword("_IS_RimLight_ON");
+                    mat.EnableKey("_IS_RimLight_ON");
                 }
-                foreach (var mat in Obstacles.Instance.TreesMaterial)
+                foreach (var mat in Obstacles.Instance.Trees)
                 {
-                    mat.EnableKeyword("_IS_RimLight_ON");
+                    mat.EnableKey("_IS_RimLight_ON");
                 }
-                foreach (var mat in Towers.Instance.TowersMaterial)
+                foreach (var mat in Towers.Instance.TowersGo)
                 {
-                    mat.EnableKeyword("_IS_RimLight_ON");
+                    mat.EnableKey("_IS_RimLight_ON");
                 }
             }
             else
             {
-                foreach (var mat in Monsters.Instance.allMats)
+                foreach (var gameObjectLod in Monsters.Instance.allMonsters)
                 {
-                    mat.DisableKeyword("_IS_RimLight_ON");
+                    gameObjectLod.DisEnableKey("_IS_RimLight_ON");
                 }
-                foreach (var mat in Obstacles.Instance.RocksMaterial)
+                foreach (var mat in Obstacles.Instance.Rocks)
                 {
-                    mat.DisableKeyword("_IS_RimLight_ON");
+                    mat.DisEnableKey("_IS_RimLight_ON");
                 }
-                foreach (var mat in Obstacles.Instance.TreesMaterial)
+                foreach (var mat in Obstacles.Instance.Trees)
                 {
-                    mat.DisableKeyword("_IS_RimLight_ON");
+                    mat.DisEnableKey("_IS_RimLight_ON");
                 }
-                foreach (var mat in Towers.Instance.TowersMaterial)
+                foreach (var mat in Towers.Instance.TowersGo)
                 {
-                    mat.DisableKeyword("_IS_RimLight_ON");
+                    mat.DisEnableKey("_IS_RimLight_ON");
                 }
             }
         }
